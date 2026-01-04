@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Lotus Garden – Gyeongju</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow">
+
+  <style>
+    :root{
+      --polaroid-w: 220px;
+      --photo-h: 160px;
+
+      /* Más separación */
+      --gap-x: 44px;  /* antes 28px */
+      --gap-y: 44px;  /* antes 28px */
+    }
+
+    html, body {
+      margin: 0;
+      height: 100%;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: #000;
+      overflow: hidden;
+    }
+
+    .bg {
+      position: fixed;
+      inset: 0;
+      background: url("../../img/gyeongju/lotus-garden/01.jpg") center / cover no-repeat;
+      z-index: 0;
+    }
+
+    .shade {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse at center, rgba(0,0,0,0.10), rgba(0,0,0,0.55));
+      z-index: 1;
+    }
+
+    .back {
+      position: fixed;
+      top: 14px;
+      left: 14px;
+      z-index: 10;
+      background: rgba(255,255,255,0.92);
+      color: #000;
+      text-decoration: none;
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: 14px;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+    }
+
+    .board {
+      position: fixed;
+      inset: 0;
+      z-index: 5;
+      display: grid;
+      place-items: center;
+      padding: 84px 18px 22px;
+      box-sizing: border-box;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, var(--polaroid-w));
+      column-gap: var(--gap-x);
+      row-gap: var(--gap-y);
+      align-items: center;
+      justify-items: center;
+    }
+
+    .polaroid {
+      width: var(--polaroid-w);
+      background: rgba(255,255,255,0.95);
+      border-radius: 12px;
+      padding: 12px 12px 18px;
+      box-sizing: border-box;
+      box-shadow: 0 14px 30px rgba(0,0,0,0.35);
+      cursor: pointer;
+      position: relative;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+
+      transform: rotate(var(--r, 0deg));
+      transform-origin: center;
+      transition: transform .16s ease, box-shadow .16s ease;
+      will-change: transform;
+    }
+
+    .polaroid:hover {
+      transform: rotate(var(--r, 0deg)) translateY(-2px) scale(1.03);
+      box-shadow: 0 18px 38px rgba(0,0,0,0.45);
+    }
+
+    .polaroid::before{
+      content: "";
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #ff6b6b, #b30000);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.35);
+    }
+
+    .polaroid .photo {
+      margin-top: 10px;
+      width: 100%;
+      height: var(--photo-h);
+      background: rgba(240,240,240,0.9);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .polaroid img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-position: center;
+    }
+
+    /* Rotaciones */
+    .p1 { --r: -3deg; }
+    .p2 { --r:  2deg; }
+    .p3 { --r:  1deg; }
+    .p4 { --r: -2deg; }
+    .p5 { --r:  3deg; }
+    .p6 { --r: -1deg; }
+
+    /* 01: NO recorta (como te gusta) */
+/* 01: como las otras (rellena y enfoca) */
+.p1 img{
+  object-fit: cover;
+  object-position: 50% 42%; /* torre + flores (ajustable) */
+}
+
+    /* 02–06: “enfocar” con recorte controlado */
+    .p2 img{ object-fit: cover; object-position: 50% 35%; } /* torre más centrada/arriba */
+    .p3 img{ object-fit: cover; object-position: 50% 45%; } /* torre (ajustable) */
+    .p4 img{ object-fit: cover; object-position: 55% 50%; } /* flor morada (ajustable) */
+    .p5 img{ object-fit: cover; object-position: 50% 65%; } /* pareja + puente (ajustable) */
+    .p6 img{ object-fit: cover; object-position: 50% 70%; } /* río (ajustable) */
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.88);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      padding: 18px;
+      box-sizing: border-box;
+    }
+    .modal.open { display: flex; }
+
+    .modal img {
+      max-width: min(1100px, 96vw);
+      max-height: 92vh;
+      object-fit: contain;
+      border-radius: 14px;
+      box-shadow: 0 18px 45px rgba(0,0,0,0.55);
+      background: rgba(255,255,255,0.04);
+    }
+
+    @media (max-width: 980px){
+      :root{ --polaroid-w: 200px; --photo-h: 145px; --gap-x: 26px; --gap-y: 26px; }
+      .grid { grid-template-columns: repeat(2, var(--polaroid-w)); }
+    }
+
+    @media (max-width: 520px){
+      :root{ --polaroid-w: 170px; --photo-h: 120px; --gap-x: 18px; --gap-y: 18px; }
+      .board { padding-top: 78px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg"></div>
+  <div class="shade"></div>
+
+  <a class="back" href="../../gyeongju.html">← Volver a Gyeongju</a>
+
+  <main class="board">
+    <section class="grid" aria-label="Fotos Lotus Garden">
+      <div class="polaroid p1" data-src="../../img/gyeongju/lotus-garden/01.jpg">
+        <div class="photo"><img src="../../img/gyeongju/lotus-garden/01.jpg" alt="Lotus Garden 01"></div>
+      </div>
+
+      <div class="polaroid p2" data-src="../../img/gyeongju/lotus-garden/02.jpg">
+        <div class="photo"><img src="../../img/gyeongju/lotus-garden/02.jpg" alt="Lotus Garden 02"></div>
+      </div>
+
+      <div class="polaroid p3" data-src="../../img/gyeongju/lotus-garden/03.jpg">
+        <div class="photo"><img src="../../img/gyeongju/lotus-garden/03.jpg" alt="Lotus Garden 03"></div>
+      </div>
+
+      <div class="polaroid p4" data-src="../../img/gyeongju/lotus-garden/04.jpg">
+        <div class="photo"><img src="../../img/gyeongju/lotus-garden/04.jpg" alt="Lotus Garden 04"></div>
+      </div>
+
+      <div class="polaroid p5" data-src="../../img/gyeongju/lotus-garden/05.jpg">
+        <div class="photo"><img src="../../img/gyeongju/lotus-garden/05.jpg" alt="Lotus Garden 05"></div>
+      </div>
+
+      <div class="polaroid p6" data-src="../../img/gyeongju/lotus-garden/06.jpg">
+        <div class="photo"><img src="../../img/gyeongju/lotus-garden/06.jpg" alt="Lotus Garden 06"></div>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal" id="modal" aria-hidden="true">
+    <img id="modalImg" alt="Foto ampliada">
+  </div>
+
+  <script>
+    const modal = document.getElementById("modal");
+    const modalImg = document.getElementById("modalImg");
+
+    function openModal(src){
+      modalImg.src = src;
+      modal.classList.add("open");
+      modal.setAttribute("aria-hidden", "false");
+    }
+
+    function closeModal(){
+      modal.classList.remove("open");
+      modal.setAttribute("aria-hidden", "true");
+      modalImg.src = "";
+    }
+
+    document.querySelectorAll(".polaroid").forEach(card => {
+      card.addEventListener("click", () => openModal(card.dataset.src));
+    });
+
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeModal();
+    });
+  </script>
+</body>
+</html>

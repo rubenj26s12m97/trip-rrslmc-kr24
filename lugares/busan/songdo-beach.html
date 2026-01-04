@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Songdo Beach – Busan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow">
+
+  <style>
+    :root{
+      --polaroid-w: 220px;
+      --photo-h: 155px;
+      --gap-x: 48px;
+      --gap-y: 56px;
+    }
+
+    html, body{
+      margin: 0;
+      min-height: 100%;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: #000;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    /* Fondo */
+    .bg{
+      position: fixed;
+      inset: 0;
+      background: url("../../img/busan/songdo-beach/01.jpg") center 50% / cover no-repeat;
+      z-index: 0;
+    }
+
+    .shade{
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(
+        ellipse at center,
+        rgba(0,0,0,0.12),
+        rgba(0,0,0,0.55)
+      );
+      z-index: 1;
+    }
+
+    .back{
+      position: fixed;
+      top: 14px;
+      left: 14px;
+      z-index: 10;
+      background: rgba(255,255,255,0.92);
+      color: #000;
+      text-decoration: none;
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: 14px;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+    }
+
+    .board{
+      position: relative;
+      z-index: 5;
+      display: grid;
+      place-items: start center;
+      padding: 90px 24px 70px;
+      box-sizing: border-box;
+      min-height: 100vh;
+    }
+
+    .layout{
+      display: grid;
+      grid-template-rows: auto auto;
+      row-gap: var(--gap-y);
+      justify-items: center;
+    }
+
+    .row{
+      display: grid;
+      grid-template-columns: repeat(3, var(--polaroid-w));
+      column-gap: var(--gap-x);
+      justify-content: center;
+      align-items: start;
+    }
+
+    /* Polaroids */
+    .polaroid{
+      width: var(--polaroid-w);
+      background: rgba(255,255,255,0.96);
+      border-radius: 12px;
+      padding: 12px 12px 18px;
+      box-shadow: 0 14px 30px rgba(0,0,0,0.35);
+      cursor: pointer;
+      position: relative;
+      user-select: none;
+      transform: translateY(var(--lift,0)) rotate(var(--r,0deg));
+      transition: transform .16s ease, box-shadow .16s ease;
+    }
+
+    .polaroid:hover{
+      transform: translateY(calc(var(--lift,0) - 2px))
+                 rotate(var(--r,0deg))
+                 scale(1.03);
+      box-shadow: 0 18px 38px rgba(0,0,0,0.45);
+      z-index: 20;
+    }
+
+    .polaroid::before{
+      content:"";
+      position:absolute;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #ff6b6b, #b30000);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.35);
+    }
+
+    .photo{
+      margin-top: 10px;
+      width: 100%;
+      height: var(--photo-h);
+      border-radius: 8px;
+      overflow: hidden;
+      background:#eee;
+      transform: rotate(calc(var(--r,0deg) * -1));
+    }
+
+    .photo img{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display:block;
+    }
+
+    /* Offsets (6 fotos) */
+    .p1{ --lift:  8px;  --r:-2deg; }
+    .p2{ --lift: -6px;  --r: 2deg; }
+    .p3{ --lift: 12px;  --r:-1deg; }
+
+    .p4{ --lift: -4px;  --r: 1deg; }
+    .p5{ --lift: 10px;  --r:-2deg; }
+    .p6{ --lift: -8px;  --r: 2deg; }
+
+    /* Modal */
+    .modal{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      padding: 18px;
+    }
+    .modal.open{ display:flex; }
+    .modal img{
+      max-width: 96vw;
+      max-height: 92vh;
+      object-fit: contain;
+      border-radius: 14px;
+    }
+
+    @media (max-width: 980px){
+      :root{
+        --polaroid-w: 185px;
+        --photo-h: 130px;
+        --gap-x: 28px;
+        --gap-y: 36px;
+      }
+      .row{
+        grid-template-columns: repeat(2, var(--polaroid-w));
+        row-gap: var(--gap-y);
+      }
+      .polaroid{ --lift:0; --r:0deg; }
+      .photo{ transform:none; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg"></div>
+  <div class="shade"></div>
+
+  <a class="back" href="../../busan.html">← Volver a Busan</a>
+
+  <main class="board">
+    <section class="layout">
+
+      <div class="row">
+        <div class="polaroid p1"><div class="photo"><img src="../../img/busan/songdo-beach/01.jpg"></div></div>
+        <div class="polaroid p2"><div class="photo"><img src="../../img/busan/songdo-beach/02.jpg"></div></div>
+        <div class="polaroid p3"><div class="photo"><img src="../../img/busan/songdo-beach/03.jpg"></div></div>
+      </div>
+
+      <div class="row">
+        <div class="polaroid p4"><div class="photo"><img src="../../img/busan/songdo-beach/04.jpg"></div></div>
+        <div class="polaroid p5"><div class="photo"><img src="../../img/busan/songdo-beach/05.jpg"></div></div>
+        <div class="polaroid p6"><div class="photo"><img src="../../img/busan/songdo-beach/06.jpg"></div></div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- Modal -->
+  <div class="modal" id="modal">
+    <img id="modalImg">
+  </div>
+
+  <script>
+    const modal = document.getElementById("modal");
+    const modalImg = document.getElementById("modalImg");
+
+    document.querySelectorAll(".polaroid").forEach(p => {
+      p.addEventListener("click", () => {
+        const img = p.querySelector("img");
+        modalImg.src = img.src;
+        modal.classList.add("open");
+      });
+    });
+
+    modal.addEventListener("click", () => {
+      modal.classList.remove("open");
+      modalImg.src = "";
+    });
+
+    window.addEventListener("keydown", e => {
+      if (e.key === "Escape") {
+        modal.classList.remove("open");
+        modalImg.src = "";
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Corea del Sur</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow">
+
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #000;
+    }
+
+    .mapa {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      touch-action: none;
+    }
+
+    .mapa-inner {
+      position: absolute;
+      left: 0;
+      top: 0;
+      will-change: transform;
+      transform-origin: 0 0;
+    }
+
+    .mapa img.mapa-base {
+      width: 100vw;
+      height: auto;
+      display: block;
+      user-select: none;
+      -webkit-user-drag: none;
+      pointer-events: none;
+    }
+
+    .pin {
+      position: absolute;
+      width: 70px;
+      z-index: 10;
+      cursor: pointer;
+      transform: translate(-50%, -100%);
+      transition: transform 0.2s ease, filter 0.2s ease;
+      user-select: none;
+      -webkit-user-drag: none;
+      touch-action: none;
+    }
+
+    .pin:hover,
+    .pin.activo {
+      transform: translate(-50%, -100%) scale(1.12);
+      filter: drop-shadow(0 0 10px rgba(255,255,255,0.9));
+      z-index: 20;
+    }
+
+    /* ===== POLAROID ===== */
+    .polaroid {
+      position: absolute;
+      width: 170px;
+      background: #fff;
+      padding: 10px 10px 14px;
+      border-radius: 10px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.45);
+
+      /* 3D transform para evitar rasterización agresiva */
+      transform: translate3d(-50%, calc(-100% - 50px), 0) rotate(-2deg);
+      transform-origin: bottom center;
+
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
+      z-index: 30;
+
+      will-change: transform;
+      backface-visibility: hidden;
+    }
+
+    .polaroid.visible {
+      opacity: 1;
+    }
+
+    .polaroid img {
+      width: 100%;
+      height: 110px;
+      object-fit: cover;
+      border-radius: 8px;
+      display: block;
+
+      backface-visibility: hidden;
+      transform: translateZ(0);
+      image-rendering: auto;
+    }
+
+    .polaroid .caption {
+      margin-top: 8px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: #222;
+    }
+
+    .polaroid::after {
+      content: "";
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      width: 14px;
+      height: 14px;
+      background: white;
+      transform: translateX(-50%) rotate(45deg);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="mapa" id="mapa">
+    <div class="mapa-inner" id="mapaInner">
+
+      <img src="img/corea.png" alt="Mapa de Corea del Sur" class="mapa-base" />
+
+      <!-- PIN SEÚL -->
+      <img src="img/pin-pais.png"
+           class="pin"
+           style="top:43%; left:53%;"
+           data-thumb="img/seul-skyline.jpg"
+           data-title="Seúl"
+           data-link="seul.html">
+
+      <!-- PIN BUSAN -->
+      <img src="img/pin-pais.png"
+           class="pin"
+           style="top:75%; left:72%;"
+           data-thumb="img/busan-skyline.jpg"
+           data-title="Busan"
+           data-link="busan.html">
+
+      <!-- PIN GYEONGJU -->
+      <img src="img/pin-pais.png"
+           class="pin"
+           style="top:56%; left:75%;"
+           data-thumb="img/gyeongju-skyline.jpg"
+           data-title="Gyeongju"
+           data-link="gyeongju.html">
+
+      <!-- POLAROID -->
+      <div id="polaroid" class="polaroid" aria-hidden="true">
+        <img id="polaroidImg" alt="">
+        <div id="polaroidCap" class="caption"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    let scale = 1, tx = 0, ty = 0;
+    const SCALE_MIN = 1, SCALE_MAX = 3;
+
+    const mapa = document.getElementById("mapa");
+    const mapaInner = document.getElementById("mapaInner");
+    const pins = document.querySelectorAll(".pin");
+
+    const polaroid = document.getElementById("polaroid");
+    const polaroidImg = document.getElementById("polaroidImg");
+    const polaroidCap = document.getElementById("polaroidCap");
+
+    let activePin = null;
+    let lastTouchPin = null;
+    let movedDuringTouch = false;
+
+    function clamp(v, min, max) {
+      return Math.min(Math.max(v, min), max);
+    }
+
+    function aplicarTransform() {
+      mapaInner.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+      if (polaroid.classList.contains("visible") && activePin) {
+        positionPolaroid(activePin);
+      }
+    }
+
+    function getPointInViewport(clientX, clientY) {
+      const rect = mapa.getBoundingClientRect();
+      return { x: clientX - rect.left, y: clientY - rect.top };
+    }
+
+    function clampPan() {
+      const vw = mapa.clientWidth;
+      const vh = mapa.clientHeight;
+      const cw = mapaInner.scrollWidth * scale;
+      const ch = mapaInner.scrollHeight * scale;
+
+      tx = clamp(tx, vw - cw, 0);
+      ty = clamp(ty, vh - ch, 0);
+    }
+
+    function zoomAt(clientX, clientY, newScale) {
+      newScale = clamp(newScale, SCALE_MIN, SCALE_MAX);
+      const p = getPointInViewport(clientX, clientY);
+
+      const worldX = (p.x - tx) / scale;
+      const worldY = (p.y - ty) / scale;
+
+      scale = newScale;
+      tx = p.x - worldX * scale;
+      ty = p.y - worldY * scale;
+
+      clampPan();
+      aplicarTransform();
+      rerasterizePolaroid();
+    }
+
+    function positionPolaroid(pin) {
+      const pinRect = pin.getBoundingClientRect();
+      const mapaRect = mapa.getBoundingClientRect();
+
+      const tipX = (pinRect.left + pinRect.width / 2) - mapaRect.left;
+      const tipY = (pinRect.top + pinRect.height) - mapaRect.top;
+
+      const worldX = (tipX - tx) / scale;
+      const worldY = (tipY - ty) / scale;
+
+      polaroid.style.left = worldX + "px";
+      polaroid.style.top = worldY + "px";
+    }
+
+    function showPolaroid(pin) {
+      polaroidImg.src = pin.dataset.thumb;
+      polaroidCap.textContent = pin.dataset.title || "";
+      positionPolaroid(pin);
+
+      polaroid.classList.add("visible");
+      pin.classList.add("activo");
+
+      if (activePin && activePin !== pin) activePin.classList.remove("activo");
+      activePin = pin;
+    }
+
+    function hidePolaroid() {
+      polaroid.classList.remove("visible");
+      if (activePin) activePin.classList.remove("activo");
+      activePin = null;
+      lastTouchPin = null;
+    }
+
+    function rerasterizePolaroid() {
+      if (!polaroid.classList.contains("visible")) return;
+      polaroid.style.display = "none";
+      void polaroid.offsetHeight;
+      polaroid.style.display = "";
+    }
+
+    pins.forEach(pin => {
+      pin.addEventListener("mouseenter", () => showPolaroid(pin));
+      pin.addEventListener("mouseleave", () => {
+        if (matchMedia("(hover: hover)").matches) hidePolaroid();
+      });
+
+      pin.addEventListener("touchstart", () => movedDuringTouch = false, { passive: true });
+      pin.addEventListener("touchmove", () => movedDuringTouch = true, { passive: true });
+
+      pin.addEventListener("click", e => {
+        const isTouch = matchMedia("(hover: none)").matches;
+        if (!isTouch) return location.href = pin.dataset.link;
+
+        if (movedDuringTouch) return;
+
+        if (lastTouchPin !== pin) {
+          e.preventDefault();
+          showPolaroid(pin);
+          lastTouchPin = pin;
+        } else {
+          location.href = pin.dataset.link;
+        }
+      });
+    });
+
+    mapa.addEventListener("click", e => {
+      if (!e.target.classList.contains("pin")) hidePolaroid();
+    });
+
+    /* PAN ratón */
+    let dragging = false, last = {x:0,y:0};
+
+    mapa.addEventListener("mousedown", e => {
+      dragging = true;
+      last = {x:e.clientX,y:e.clientY};
+    });
+
+    window.addEventListener("mousemove", e => {
+      if (!dragging) return;
+      tx += e.clientX - last.x;
+      ty += e.clientY - last.y;
+      last = {x:e.clientX,y:e.clientY};
+      clampPan(); aplicarTransform();
+    });
+
+    window.addEventListener("mouseup", () => dragging = false);
+
+    /* Trackpad / rueda */
+    mapa.addEventListener("wheel", e => {
+      e.preventDefault();
+      if (e.ctrlKey) {
+        const factor = Math.exp(-e.deltaY * 0.002);
+        zoomAt(e.clientX, e.clientY, scale * factor);
+      } else {
+        tx -= e.deltaX;
+        ty -= e.deltaY;
+        clampPan(); aplicarTransform();
+      }
+    }, { passive:false });
+
+    window.addEventListener("load", () => {
+      clampPan();
+      aplicarTransform();
+    });
+
+    window.addEventListener("resize", () => {
+      clampPan();
+      aplicarTransform();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Donkatsu – Busan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow">
+
+  <style>
+    :root{
+  --polaroid-w: 250px;
+  --photo-h: 175px;
+  --gap-x: 90px;
+    }
+
+    html, body{
+      margin: 0;
+      height: 100%;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: #000;
+      overflow: hidden;
+    }
+
+    /* Fondo (01) */
+    .bg{
+  position: fixed;
+  inset: 0;
+  background: url("../../img/busan/donkatsu/01.jpg") center 70% / cover no-repeat;
+  z-index: 0;
+  filter: saturate(0.9);
+}
+
+    .shade{
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(
+        ellipse at center,
+        rgba(0,0,0,0.22),
+        rgba(0,0,0,0.75)
+      );
+      z-index: 1;
+    }
+
+    .back{
+      position: fixed;
+      top: 14px;
+      left: 14px;
+      z-index: 10;
+      background: rgba(255,255,255,0.92);
+      color: #000;
+      text-decoration: none;
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: 14px;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+    }
+
+    .board{
+      position: fixed;
+      inset: 0;
+      z-index: 5;
+      display: grid;
+      place-items: center;
+      padding-top: 100px;
+      box-sizing: border-box;
+    }
+
+    .row{
+      display: grid;
+      grid-template-columns: repeat(2, var(--polaroid-w));
+      column-gap: var(--gap-x);
+      justify-content: center;
+      align-items: start;
+    }
+
+    /* Polaroid */
+    .polaroid{
+      width: var(--polaroid-w);
+      background: rgba(255,255,255,0.95);
+      border-radius: 14px;
+      padding: 14px 14px 20px;
+      box-shadow: 0 18px 36px rgba(0,0,0,0.45);
+      cursor: pointer;
+      position: relative;
+      user-select: none;
+      transform: translateY(var(--lift,0)) rotate(var(--r,0deg));
+      transition: transform .16s ease, box-shadow .16s ease;
+    }
+
+    .polaroid:hover{
+      transform: translateY(calc(var(--lift,0) - 2px))
+                 rotate(var(--r,0deg))
+                 scale(1.03);
+      box-shadow: 0 24px 48px rgba(0,0,0,0.6);
+      z-index: 20;
+    }
+
+    /* Chincheta */
+    .polaroid::before{
+      content:"";
+      position:absolute;
+      top: 9px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #ff6b6b, #b30000);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.35);
+    }
+
+    .photo{
+      margin-top: 12px;
+      width: 100%;
+      height: var(--photo-h);
+      border-radius: 10px;
+      overflow: hidden;
+      background:#eee;
+      transform: rotate(calc(var(--r,0deg) * -1));
+    }
+
+    .photo img{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display:block;
+    }
+
+    /* Offsets */
+    .p1{ --lift:  10px; --r:-2deg; }
+    .p2{ --lift:  -6px; --r: 2deg; }
+
+    /* Modal */
+    .modal{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.9);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      padding: 18px;
+    }
+    .modal.open{ display:flex; }
+    .modal img{
+      max-width: 96vw;
+      max-height: 92vh;
+      object-fit: contain;
+      border-radius: 16px;
+    }
+
+    @media (max-width: 980px){
+      :root{
+        --polaroid-w: 200px;
+        --photo-h: 140px;
+        --gap-x: 28px;
+      }
+      .row{
+        grid-template-columns: 1fr;
+        row-gap: 32px;
+      }
+      .polaroid{ --lift:0; --r:0deg; }
+      .photo{ transform:none; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg"></div>
+  <div class="shade"></div>
+
+  <a class="back" href="../../busan.html">← Volver a Busan</a>
+
+  <main class="board">
+    <div class="row">
+      <div class="polaroid p1" data-src="../../img/busan/donkatsu/02.jpg">
+        <div class="photo"><img src="../../img/busan/donkatsu/02.jpg" alt=""></div>
+      </div>
+
+      <div class="polaroid p2" data-src="../../img/busan/donkatsu/03.jpg">
+        <div class="photo"><img src="../../img/busan/donkatsu/03.jpg" alt=""></div>
+      </div>
+    </div>
+  </main>
+
+  <div class="modal" id="modal">
+    <img id="modalImg">
+  </div>
+
+  <script>
+    const modal = document.getElementById("modal");
+    const modalImg = document.getElementById("modalImg");
+
+    document.querySelectorAll(".polaroid").forEach(p=>{
+      p.addEventListener("click", ()=>{
+        modalImg.src = p.dataset.src;
+        modal.classList.add("open");
+      });
+    });
+
+    modal.addEventListener("click", ()=>{
+      modal.classList.remove("open");
+      modalImg.src = "";
+    });
+
+    window.addEventListener("keydown", e=>{
+      if(e.key==="Escape"){
+        modal.classList.remove("open");
+        modalImg.src="";
+      }
+    });
+  </script>
+</body>
+</html>

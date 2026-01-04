@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Hwangnidan-gil Street – Gyeongju</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow">
+
+  <style>
+    :root{
+      --polaroid-w: 215px;
+      --photo-h: 155px;
+      --gap-x: 64px;
+      --gap-y: 46px;
+    }
+
+    html, body {
+      margin: 0;
+      height: 100%;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: #000;
+      overflow: hidden;
+    }
+
+    /* Fondo (01.jpg) */
+    .bg {
+      position: fixed;
+      inset: 0;
+      background: url("../../img/gyeongju/hwangnidan-gil-street/01.jpg") center / cover no-repeat;
+      z-index: 0;
+    }
+
+    .shade {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(
+        ellipse at center,
+        rgba(0,0,0,0.15),
+        rgba(0,0,0,0.6)
+      );
+      z-index: 1;
+    }
+
+    .back {
+      position: fixed;
+      top: 14px;
+      left: 14px;
+      z-index: 10;
+      background: rgba(255,255,255,0.92);
+      color: #000;
+      text-decoration: none;
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: 14px;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+    }
+
+    .board {
+      position: fixed;
+      inset: 0;
+      z-index: 5;
+      display: grid;
+      place-items: center;
+      padding-top: 90px;
+      box-sizing: border-box;
+    }
+
+    /* Layout 2 arriba / 3 abajo */
+    .layout {
+      display: grid;
+      grid-template-rows: auto auto;
+      row-gap: var(--gap-y);
+    }
+
+    .row-top {
+      display: grid;
+      grid-template-columns: repeat(2, var(--polaroid-w));
+      column-gap: var(--gap-x);
+      justify-content: center;
+    }
+
+    .row-bottom {
+      display: grid;
+      grid-template-columns: repeat(3, var(--polaroid-w));
+      column-gap: var(--gap-x);
+      justify-content: center;
+    }
+
+    .polaroid {
+      width: var(--polaroid-w);
+      background: rgba(255,255,255,0.95);
+      border-radius: 12px;
+      padding: 12px 12px 18px;
+      box-shadow: 0 14px 30px rgba(0,0,0,0.35);
+      cursor: pointer;
+      position: relative;
+      user-select: none;
+      transition: transform .16s ease, box-shadow .16s ease;
+      transform: rotate(var(--r, 0deg));
+    }
+
+    .polaroid:hover {
+      transform: rotate(var(--r, 0deg)) translateY(-2px) scale(1.03);
+      box-shadow: 0 18px 38px rgba(0,0,0,0.45);
+    }
+
+    .polaroid::before{
+      content: "";
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #ff6b6b, #b30000);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.35);
+    }
+
+    .photo {
+      margin-top: 10px;
+      width: 100%;
+      height: var(--photo-h);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #eee;
+    }
+
+    .photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Rotaciones */
+    .p1 { --r: -2deg; }
+    .p2 { --r:  2deg; }
+    .p3 { --r: -1deg; }
+    .p4 { --r:  2deg; }
+    .p5 { --r: -2deg; }
+
+    /* Modal */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.88);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      padding: 18px;
+    }
+
+    .modal.open { display: flex; }
+
+    .modal img {
+      max-width: 96vw;
+      max-height: 92vh;
+      object-fit: contain;
+      border-radius: 14px;
+    }
+
+    @media (max-width: 980px){
+      :root{ --polaroid-w: 190px; --photo-h: 140px; --gap-x: 32px; }
+      .row-bottom { grid-template-columns: repeat(2, var(--polaroid-w)); row-gap: var(--gap-y); }
+    }
+
+    @media (max-width: 520px){
+      :root{ --polaroid-w: 165px; --photo-h: 120px; --gap-x: 24px; }
+      .layout { row-gap: 36px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg"></div>
+  <div class="shade"></div>
+
+  <a class="back" href="../../gyeongju.html">← Volver a Gyeongju</a>
+
+  <main class="board">
+    <section class="layout">
+
+      <!-- Arriba: 01, 02 -->
+      <div class="row-top">
+        <div class="polaroid p1" data-src="../../img/gyeongju/hwangnidan-gil-street/01.jpg">
+          <div class="photo"><img src="../../img/gyeongju/hwangnidan-gil-street/01.jpg" alt=""></div>
+        </div>
+
+        <div class="polaroid p2" data-src="../../img/gyeongju/hwangnidan-gil-street/02.jpg">
+          <div class="photo"><img src="../../img/gyeongju/hwangnidan-gil-street/02.jpg" alt=""></div>
+        </div>
+      </div>
+
+      <!-- Abajo: 03, 04, 05 -->
+      <div class="row-bottom">
+        <div class="polaroid p3" data-src="../../img/gyeongju/hwangnidan-gil-street/03.jpg">
+          <div class="photo"><img src="../../img/gyeongju/hwangnidan-gil-street/03.jpg" alt=""></div>
+        </div>
+
+        <div class="polaroid p4" data-src="../../img/gyeongju/hwangnidan-gil-street/04.jpg">
+          <div class="photo"><img src="../../img/gyeongju/hwangnidan-gil-street/04.jpg" alt=""></div>
+        </div>
+
+        <div class="polaroid p5" data-src="../../img/gyeongju/hwangnidan-gil-street/05.jpg">
+          <div class="photo"><img src="../../img/gyeongju/hwangnidan-gil-street/05.jpg" alt=""></div>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <div class="modal" id="modal">
+    <img id="modalImg" alt="Foto ampliada">
+  </div>
+
+  <script>
+    const modal = document.getElementById("modal");
+    const modalImg = document.getElementById("modalImg");
+
+    document.querySelectorAll(".polaroid").forEach(p => {
+      p.addEventListener("click", () => {
+        modalImg.src = p.dataset.src;
+        modal.classList.add("open");
+      });
+    });
+
+    modal.addEventListener("click", () => {
+      modal.classList.remove("open");
+      modalImg.src = "";
+    });
+
+    window.addEventListener("keydown", e => {
+      if(e.key === "Escape") modal.classList.remove("open");
+    });
+  </script>
+</body>
+</html>
