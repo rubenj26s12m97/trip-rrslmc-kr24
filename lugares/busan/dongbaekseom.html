@@ -10,8 +10,9 @@
     :root{
       --polaroid-w: 235px;
       --photo-h: 165px;
-      --gap-x: 96px;  /* ✅ más gap entre las 2 de abajo */
+      --gap-x: 96px;
       --gap-y: 52px;
+      --center-y: 0px; /* ✅ si lo quieres un pelín más alto/bajo */
     }
 
     html, body{
@@ -19,10 +20,9 @@
       height: 100%;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background: #000;
-      overflow: hidden; /* el scroll lo hace .viewport */
+      overflow: hidden;
     }
 
-    /* Botón volver */
     .back{
       position: fixed;
       top: 14px;
@@ -38,7 +38,6 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* Scroll 2D nativo */
     .viewport{
       position: fixed;
       inset: 0;
@@ -48,7 +47,6 @@
       background: #000;
     }
 
-    /* Mundo más grande que la pantalla */
     .stage{
       position: relative;
       width: 1400px;
@@ -62,12 +60,11 @@
         url("../../img/busan/dongbaekseom/01.jpg") center 45% / cover no-repeat;
     }
 
-    /* ✅ Layout centrado REAL sobre el fondo */
     .layout{
       position: absolute;
       left: 50%;
       top: 50%;
-      transform: translate(-50%, -50%);
+      transform: translate(-50%, calc(-50% + var(--center-y)));
 
       display: grid;
       grid-template-rows: auto auto;
@@ -89,7 +86,6 @@
       justify-content: center;
     }
 
-    /* Polaroids */
     .polaroid{
       width: var(--polaroid-w);
       background: rgba(255,255,255,0.96);
@@ -147,12 +143,10 @@
       pointer-events: none;
     }
 
-    /* Offsets */
     .p1{ --lift:  8px;  --r:-2deg; }
     .p2{ --lift: -6px;  --r: 2deg; }
     .p3{ --lift: 10px;  --r:-1deg; }
 
-    /* Modal */
     .modal{
       position: fixed;
       inset: 0;
@@ -171,25 +165,18 @@
       border-radius: 14px;
     }
 
-    /* Móvil */
     @media (max-width: 768px){
       :root{
         --polaroid-w: 200px;
         --photo-h: 145px;
         --gap-x: 72px;
         --gap-y: 34px;
+        --center-y: 0px;
       }
       .stage{
         width: 1200px;
         height: 900px;
       }
-
-      .layout{
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-      }
-
       .photo{ transform: none; }
       .polaroid{ --lift: 0; }
     }
@@ -202,7 +189,6 @@
   <div class="viewport" id="viewport">
     <div class="stage" id="stage">
       <section class="layout" id="layout">
-
         <div class="row top">
           <div class="polaroid p1">
             <div class="photo">
@@ -224,19 +210,16 @@
             </div>
           </div>
         </div>
-
       </section>
     </div>
   </div>
 
-  <!-- Modal -->
   <div class="modal" id="modal">
     <img id="modalImg" alt="">
   </div>
 
   <script>
-    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
-
+    // ---------- Modal ----------
     const modal = document.getElementById("modal");
     const modalImg = document.getElementById("modalImg");
 
@@ -254,10 +237,12 @@
     }
 
     modal.addEventListener("click", closeModal);
-
     window.addEventListener("keydown", e => {
       if (e.key === "Escape") closeModal();
     });
+
+    // ---------- FIX: entrar centrado (evita restauración a esquina) ----------
+    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
 
     function clamp(v, min, max){ return Math.min(Math.max(v, min), max); }
 
@@ -267,30 +252,38 @@
       const layout = document.getElementById("layout");
       if (!vp || !stage || !layout) return;
 
-      vp.scrollTo(0, 0);
+      const cx = layout.offsetLeft + layout.offsetWidth / 2;
+      const cy = layout.offsetTop  + layout.offsetHeight / 2;
 
-      const doCenter = () => {
-        const cx = layout.offsetLeft + layout.offsetWidth / 2;
-        const cy = layout.offsetTop  + layout.offsetHeight / 2;
+      const targetX = cx - vp.clientWidth / 2;
+      const targetY = cy - vp.clientHeight / 2;
 
-        const targetX = cx - vp.clientWidth / 2;
-        const targetY = cy - vp.clientHeight / 2;
+      const maxX = stage.offsetWidth  - vp.clientWidth;
+      const maxY = stage.offsetHeight - vp.clientHeight;
 
-        const maxX = stage.offsetWidth  - vp.clientWidth;
-        const maxY = stage.offsetHeight - vp.clientHeight;
-
-        vp.scrollLeft = clamp(targetX, 0, Math.max(0, maxX));
-        vp.scrollTop  = clamp(targetY, 0, Math.max(0, maxY));
-      };
-
-      // 2 RAF + reintentos: Safari/iOS puede restaurar scroll después del load
-      requestAnimationFrame(() => requestAnimationFrame(doCenter));
-      setTimeout(doCenter, 80);
-      setTimeout(doCenter, 250);
+      vp.scrollLeft = clamp(targetX, 0, Math.max(0, maxX));
+      vp.scrollTop  = clamp(targetY, 0, Math.max(0, maxY));
     }
 
-    window.addEventListener("load", centerOnLayout);
-    window.addEventListener("pageshow", centerOnLayout);
+    function forceCenter(){
+      const vp = document.getElementById("viewport");
+      if (!vp) return;
+
+      vp.scrollLeft = 0;
+      vp.scrollTop  = 0;
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          centerOnLayout();
+          setTimeout(centerOnLayout, 60);
+          setTimeout(centerOnLayout, 160);
+        });
+      });
+    }
+
+    window.addEventListener("load", forceCenter);
+    window.addEventListener("pageshow", forceCenter);
+    window.addEventListener("orientationchange", () => setTimeout(forceCenter, 250));
   </script>
 </body>
 </html>
