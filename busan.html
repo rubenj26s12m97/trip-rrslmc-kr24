@@ -29,6 +29,7 @@
       z-index: 9999;
       transform: translateZ(0);
       line-height: 1;
+      -webkit-tap-highlight-color: transparent;
     }
 
     .tooltip {
@@ -50,9 +51,9 @@
     .mapa {
       position: relative;
       width: 100vw;
-      height: 100vh;
+      height: 100dvh;              /* ✅ */
       overflow: hidden;
-      touch-action: none; /* pan/zoom custom */
+      touch-action: none;
       background: #000;
     }
 
@@ -66,7 +67,6 @@
       backface-visibility: hidden;
     }
 
-    /* La imagen llena el mundo, que fijaremos a naturalWidth/Height */
     .mapa img.mapa-base {
       width: 100%;
       height: 100%;
@@ -80,7 +80,7 @@
 
     .pin {
       position: absolute;
-      width: 45px;
+      width: 46px;                 /* ✅ un poco más grande en desktop */
       height: auto;
       z-index: 10;
       cursor: pointer;
@@ -109,9 +109,19 @@
       }
     }
 
-    /* Móvil: pin más pequeño (sin hacks que muevan el centro) */
+    /* ✅ móvil: pins más grandes (antes 30px) */
     @media (max-width: 768px) {
-      .pin { width: 30px; }
+      .pin { width: 40px; }
+    }
+
+    /* ✅ área táctil grande SIN mover el centro */
+    @media (hover: none) {
+      .pin::before {
+        content: "";
+        position: absolute;
+        inset: -14px;
+        background: transparent;
+      }
     }
 
     .day-granate { filter: hue-rotate(350deg) saturate(95%) brightness(95%); }
@@ -146,6 +156,30 @@
     .c-azul    { background: #1f6fa6; }
     .c-verde   { background: #2f8f4e; }
 
+    /* ✅ En móvil, leyenda arriba-dcha para no tapar pines de abajo */
+    @media (max-width: 768px) {
+      .legend{
+        top: 12px;
+        bottom: auto;
+        left: auto;
+        right: 12px;
+        margin-left: 70px;
+        font-size: 13px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        gap: 10px;
+      }
+      .back {
+        padding: 10px 12px;
+        border-radius: 12px;
+        font-size: 14px;
+      }
+      .tooltip {
+        top: 50px;
+        font-size: 13px;
+      }
+    }
+
     .pin-label {
       position: absolute;
       z-index: 99999;
@@ -167,21 +201,6 @@
     }
 
     @media (max-width: 768px) {
-      .back {
-        padding: 10px 12px;
-        border-radius: 12px;
-        font-size: 14px;
-      }
-      .tooltip {
-        top: 50px;
-        font-size: 13px;
-      }
-      .legend {
-        font-size: 13px;
-        padding: 10px 12px;
-        border-radius: 12px;
-        gap: 10px;
-      }
       .pin-label{
         font-size: 13px;
         padding: 8px 10px;
@@ -313,7 +332,6 @@
       showTip._t = setTimeout(() => tip.style.display = 'none', 2200);
     }
 
-    // Etiqueta: sin offsetLeft (evita inconsistencias), reutiliza % del pin
     function showPinLabelFor(pin) {
       const name = pin.dataset.name ?? '';
       if (!name) return;
@@ -334,7 +352,7 @@
       });
     });
 
-    // ===== Motor pan + zoom (robusto) =====
+    // ===== Motor pan + zoom =====
     let scale = 1, tx = 0, ty = 0;
     let SCALE_MIN = 1;
     const SCALE_MAX = 4;
@@ -393,7 +411,7 @@
 
       const isMobile = matchMedia("(max-width: 768px)").matches;
       scale = isMobile ? cover * 1.08 : cover;
-      SCALE_MIN = cover; // evita negro al hacer zoom-out
+      SCALE_MIN = cover;
 
       tx = (vw - mapW * scale) / 2;
       ty = (vh - mapH * scale) / 2;
@@ -401,7 +419,7 @@
       aplicarTransform();
     }
 
-    // ===== Pointer Events: pan 1 dedo + pinch 2 dedos =====
+    // ===== Pointer Events =====
     const pointers = new Map();
     let lastPan = { x: 0, y: 0 };
     let startDist = 0;
@@ -461,7 +479,6 @@
     mapa.addEventListener("pointerup", endPointer);
     mapa.addEventListener("pointercancel", endPointer);
 
-    // Trackpad/rueda
     mapa.addEventListener("wheel", (e) => {
       e.preventDefault();
       if (e.ctrlKey) {

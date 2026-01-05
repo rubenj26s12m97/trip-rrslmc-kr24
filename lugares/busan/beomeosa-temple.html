@@ -10,7 +10,7 @@
     :root{
       --polaroid-w: 260px;
       --photo-h: 180px;
-      --gap-x: 52px;
+      --gap-x: 72px; /* ✅ más gap */
     }
 
     html, body{
@@ -47,26 +47,24 @@
       background: #000;
     }
 
-    /* “Mundo” (más grande que la pantalla) */
+    /* “Mundo” */
     .stage{
       position: relative;
-      width: 1400px;
-      height: 900px;
+      width: 1500px;
+      height: 1000px;
 
-      /* Fondo continuo (sin negro fuera): el usuario se desplaza por la imagen */
+      /* Fondo continuo */
       background:
-        linear-gradient(
-          rgba(0,0,0,0.45),
-          rgba(0,0,0,0.45)
-        ),
+        linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)),
         url("../../img/busan/beomeosa-temple/01.jpg") center 20% / cover no-repeat;
     }
 
-    /* Fila de polaroids colocada sobre el fondo */
+    /* ✅ fila centrada (sobre el fondo), no “a mano” */
     .row{
       position: absolute;
-      top: 160px;
-      left: 180px;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
 
       display: flex;
       gap: var(--gap-x);
@@ -157,22 +155,18 @@
       border-radius: 14px;
     }
 
-    /* Móvil: stage algo más compacto y polaroids ligeramente más pequeñas */
+    /* Móvil */
     @media (max-width: 768px){
       :root{
         --polaroid-w: 220px;
         --photo-h: 160px;
-        --gap-x: 36px;
+        --gap-x: 54px; /* ✅ más gap también en móvil */
       }
       .stage{
-        width: 1200px;
-        height: 900px;
+        width: 1300px;
+        height: 980px;
       }
-      .row{
-        top: 150px;
-        left: 120px;
-      }
-      .photo{ transform: none; } /* en móvil, menos “contrarrotación” para legibilidad */
+      .photo{ transform: none; }
       .polaroid{ --lift: 0; }
     }
   </style>
@@ -183,7 +177,7 @@
 
   <div class="viewport" id="viewport">
     <div class="stage" id="stage">
-      <div class="row">
+      <div class="row" id="row">
         <div class="polaroid p1" data-src="../../img/busan/beomeosa-temple/03.jpg">
           <div class="photo"><img src="../../img/busan/beomeosa-temple/03.jpg" alt=""></div>
         </div>
@@ -225,13 +219,20 @@
       if(e.key === "Escape") closeModal();
     });
 
-    // Opcional: centra el viewport de forma agradable al cargar (sin “negro”)
+    // ✅ Centrado inicial REAL: centra el bloque de polaroids en el viewport
     window.addEventListener("load", () => {
       const vp = document.getElementById("viewport");
       const stage = document.getElementById("stage");
-      // centrado suave hacia la zona donde están las polaroids (aprox)
-      vp.scrollLeft = Math.max(0, (stage.offsetWidth  - vp.clientWidth)  * 0.35);
-      vp.scrollTop  = Math.max(0, (stage.offsetHeight - vp.clientHeight) * 0.15);
+      const row = document.getElementById("row");
+
+      const rowLeft = row.offsetLeft;
+      const rowTop  = row.offsetTop;
+
+      const targetX = rowLeft + row.offsetWidth  / 2 - vp.clientWidth  / 2;
+      const targetY = rowTop  + row.offsetHeight / 2 - vp.clientHeight / 2;
+
+      vp.scrollLeft = Math.max(0, Math.min(stage.offsetWidth  - vp.clientWidth,  targetX));
+      vp.scrollTop  = Math.max(0, Math.min(stage.offsetHeight - vp.clientHeight, targetY));
     });
   </script>
 </body>

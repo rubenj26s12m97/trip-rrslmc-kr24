@@ -29,6 +29,7 @@
       z-index: 9999;
       transform: translateZ(0);
       line-height: 1;
+      -webkit-tap-highlight-color: transparent;
     }
 
     .tooltip {
@@ -50,7 +51,7 @@
     .mapa {
       position: relative;
       width: 100vw;
-      height: 100vh;
+      height: 100dvh;             /* ✅ evita “salto” por barra del navegador */
       overflow: hidden;
       touch-action: none;
       background: #000;
@@ -66,7 +67,6 @@
       backface-visibility: hidden;
     }
 
-    /* Imagen llena el mundo (mundo = tamaño natural) */
     .mapa img.mapa-base {
       width: 100%;
       height: 100%;
@@ -80,7 +80,7 @@
 
     .pin {
       position: absolute;
-      width: 30px; /* desktop */
+      width: 34px;               /* ✅ más grande en desktop */
       height: auto;
       z-index: 10;
       cursor: pointer;
@@ -109,11 +109,21 @@
       }
     }
 
-    /* Móvil: un poco más pequeño */
+    /* ✅ móvil: pins claramente más grandes */
     @media (max-width: 768px) {
-      .pin { width: 26px; }
+      .pin { width: 42px; }
       .back { padding: 10px 12px; font-size: 14px; border-radius: 12px; }
       .tooltip { top: 50px; font-size: 13px; }
+    }
+
+    /* ✅ tap-target grande sin desplazar el icono */
+    @media (hover: none) {
+      .pin::before{
+        content:"";
+        position:absolute;
+        inset:-14px;
+        background:transparent;
+      }
     }
 
     .day-granate { filter: hue-rotate(350deg) saturate(95%) brightness(95%); }
@@ -136,6 +146,17 @@
       flex-wrap: wrap;
       max-width: calc(100vw - 24px);
       transform: translateZ(0);
+    }
+
+    /* ✅ en móvil la subimos arriba-dcha para no tapar pines inferiores */
+    @media (max-width: 768px){
+      .legend{
+        top: 12px;
+        bottom: auto;
+        left: auto;
+        right: 12px;
+        margin-left: 70px;
+      }
     }
 
     .key { display: inline-flex; gap: 8px; align-items: center; white-space: nowrap; }
@@ -252,7 +273,6 @@
       showTip._t = setTimeout(() => tip.style.display = 'none', 2000);
     }
 
-    // Etiqueta por % (evita offsets que cambian con padding/margin, etc.)
     function showPinLabelFor(pin) {
       const name = pin.dataset.name ?? '';
       if (!name) return;
@@ -273,7 +293,7 @@
       });
     });
 
-    // ===== Motor pan + zoom (robusto) =====
+    // ===== Motor pan + zoom =====
     let scale = 1, tx = 0, ty = 0;
     let SCALE_MIN = 1;
     const SCALE_MAX = 4;
@@ -328,7 +348,6 @@
       const vw = mapa.clientWidth;
       const vh = mapa.clientHeight;
 
-      // cover: llena pantalla sin negro
       const cover = Math.max(vw / mapW, vh / mapH);
 
       const isMobile = matchMedia("(max-width: 768px)").matches;
@@ -341,7 +360,7 @@
       aplicarTransform();
     }
 
-    // ===== Pointer Events: pan 1 dedo + pinch 2 dedos =====
+    // ===== Pointer Events =====
     const pointers = new Map();
     let lastPan = { x: 0, y: 0 };
     let startDist = 0;
@@ -401,7 +420,6 @@
     mapa.addEventListener("pointerup", endPointer);
     mapa.addEventListener("pointercancel", endPointer);
 
-    // Trackpad/rueda
     mapa.addEventListener("wheel", (e) => {
       e.preventDefault();
       if (e.ctrlKey) {
@@ -418,7 +436,6 @@
       mapW = mapImg.naturalWidth;
       mapH = mapImg.naturalHeight;
 
-      // mundo fijo al tamaño real del mapa
       mapaInner.style.width = mapW + "px";
       mapaInner.style.height = mapH + "px";
 

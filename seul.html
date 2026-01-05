@@ -29,6 +29,7 @@
       z-index: 9999;
       transform: translateZ(0);
       line-height: 1;
+      -webkit-tap-highlight-color: transparent;
     }
 
     .tooltip {
@@ -51,9 +52,9 @@
     .mapa {
       position: relative;
       width: 100vw;
-      height: 100vh;
+      height: 100dvh;                 /* ✅ evita que la barra del móvil “coma” viewport */
       overflow: hidden;
-      touch-action: none; /* pan/zoom custom */
+      touch-action: none;
       background: #000;
     }
 
@@ -68,7 +69,6 @@
       backface-visibility: hidden;
     }
 
-    /* La imagen llena el mundo (que fijaremos a naturalWidth/Height en JS) */
     .mapa img.mapa-base {
       width: 100%;
       height: 100%;
@@ -82,12 +82,11 @@
     /* Pins */
     .pin {
       position: absolute;
-      width: 54px;
+      width: 54px; /* desktop */
       height: auto;
       z-index: 10;
       cursor: pointer;
 
-      /* Mantengo tu ancla actual para no “recalibrar” posiciones */
       transform: translate(-50%, -50%) translateZ(0);
 
       -webkit-tap-highlight-color: transparent;
@@ -114,9 +113,19 @@
       }
     }
 
-    /* Móvil: pin más pequeño */
+    /* ✅ móvil: pins más grandes (antes 32px) */
     @media (max-width: 768px) {
-      .pin { width: 32px; }
+      .pin { width: 42px; }
+    }
+
+    /* ✅ área táctil grande SIN desplazar el centro */
+    @media (hover: none) {
+      .pin::before {
+        content: "";
+        position: absolute;
+        inset: -14px;
+        background: transparent;
+      }
     }
 
     /* Colores */
@@ -125,6 +134,7 @@
     .day-azul    { filter: hue-rotate(200deg) saturate(95%) brightness(95%); }
     .day-verde   { filter: hue-rotate(110deg) saturate(95%) brightness(95%); }
 
+    /* Leyenda */
     .legend {
       position: fixed;
       bottom: 12px;
@@ -141,6 +151,7 @@
       flex-wrap: wrap;
       max-width: calc(100vw - 24px);
       transform: translateZ(0);
+      user-select: none;
     }
 
     .key { display: inline-flex; gap: 8px; align-items: center; white-space: nowrap; }
@@ -151,6 +162,22 @@
     .c-azul    { background: #1f6fa6; }
     .c-verde   { background: #2f8f4e; }
 
+    /* ✅ En móvil movemos la leyenda arriba a la derecha (evita tapar pins inferiores) */
+    @media (max-width: 768px) {
+      .legend{
+        top: 12px;
+        bottom: auto;
+        left: auto;
+        right: 12px;
+        margin-left: 70px; /* deja respirar al botón back */
+        font-size: 13px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        gap: 10px;
+      }
+    }
+
+    /* Etiqueta flotante */
     .pin-label {
       position: absolute;
       z-index: 99999;
@@ -181,12 +208,6 @@
       .tooltip {
         top: 50px;
         font-size: 13px;
-      }
-      .legend {
-        font-size: 13px;
-        padding: 10px 12px;
-        border-radius: 12px;
-        gap: 10px;
       }
       .pin-label{
         font-size: 13px;
@@ -354,7 +375,6 @@
       showTip._t = setTimeout(() => { tip.style.display = 'none'; }, 2200);
     }
 
-    // Etiqueta: usa el mismo sistema de coordenadas (%), sin depender de offsets/transform
     function showPinLabelFor(pin) {
       const name = pin.dataset.name ?? '';
       if (!name) return;
@@ -371,12 +391,11 @@
     document.querySelectorAll('.pin').forEach(pin => {
       pin.addEventListener('mouseenter', () => showPinLabelFor(pin));
       pin.addEventListener('click', () => {
-        // en móvil también mostramos etiqueta (el enlace se abrirá igual)
         if (matchMedia("(hover: none)").matches) showPinLabelFor(pin);
       });
     });
 
-    // ===== Motor pan + zoom (robusto) =====
+    // ===== Motor pan + zoom =====
     let scale = 1, tx = 0, ty = 0;
     let SCALE_MIN = 1;
     const SCALE_MAX = 4;
@@ -431,12 +450,11 @@
       const vw = mapa.clientWidth;
       const vh = mapa.clientHeight;
 
-      // cover: llena pantalla sin negro
       const cover = Math.max(vw / mapW, vh / mapH);
 
       const isMobile = matchMedia("(max-width: 768px)").matches;
       scale = isMobile ? cover * 1.08 : cover;
-      SCALE_MIN = cover; // evita zoom-out que muestre negro
+      SCALE_MIN = cover;
 
       tx = (vw - mapW * scale) / 2;
       ty = (vh - mapH * scale) / 2;
@@ -444,7 +462,7 @@
       aplicarTransform();
     }
 
-    // ===== Pointer Events: pan 1 dedo + pinch 2 dedos =====
+    // ===== Pointer Events =====
     const pointers = new Map();
     let lastPan = { x: 0, y: 0 };
     let startDist = 0;
@@ -521,7 +539,6 @@
       mapW = mapImg.naturalWidth;
       mapH = mapImg.naturalHeight;
 
-      // fija el mundo al tamaño real del mapa
       mapaInner.style.width = mapW + "px";
       mapaInner.style.height = mapH + "px";
 

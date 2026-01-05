@@ -17,10 +17,10 @@
     .mapa {
       position: relative;
       width: 100vw;
-      height: 100vh;
+      height: 100dvh;              /* ✅ evita el “corte” por barras del navegador */
       overflow: hidden;
       background: #000;
-      touch-action: none; /* usamos pan/zoom custom */
+      touch-action: none;
     }
 
     .mapa-inner {
@@ -31,8 +31,6 @@
       transform-origin: 0 0;
     }
 
-    /* IMPORTANTE: ahora la imagen ocupa el "mundo" (mapaInner),
-       que tendrá el tamaño natural (naturalWidth/Height). */
     .mapa img.mapa-base {
       width: 100%;
       height: 100%;
@@ -45,18 +43,18 @@
     /* ===== PIN ===== */
     .pin {
       position: absolute;
-      width: 70px;
+      width: 76px;                /* ✅ un poco más grande en desktop */
       height: auto;
       z-index: 10;
       cursor: pointer;
 
-      /* Ancla consistente (centro X, punta Y) para que al cambiar tamaño no “derrape” */
       transform: translate(-50%, -100%);
       transition: transform 0.2s ease, filter 0.2s ease;
 
       user-select: none;
       -webkit-user-drag: none;
       touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
 
     @media (hover: hover) {
@@ -76,18 +74,17 @@
       }
     }
 
+    /* ✅ móvil: más grandes (antes 42px) */
     @media (max-width: 768px) {
-      .pin { width: 42px; }
+      .pin { width: 52px; }
     }
 
+    /* ✅ área táctil grande SIN mover el centro */
     @media (hover: none) {
       .pin::before {
         content: "";
         position: absolute;
-        left: -18px;
-        top: -18px;
-        width: calc(100% + 36px);
-        height: calc(100% + 36px);
+        inset: -14px;
         background: transparent;
       }
     }
@@ -221,8 +218,6 @@
       const scaledW = mapW * scale;
       const scaledH = mapH * scale;
 
-      // Si el mapa es más pequeño que el viewport, centramos y bloqueamos.
-      // Si es más grande, limitamos para no “salirse” y no mostrar negro.
       const minX = Math.min(0, vw - scaledW);
       const minY = Math.min(0, vh - scaledH);
 
@@ -342,7 +337,7 @@
       hidePolaroid();
     });
 
-    /* ===== PAN + PINCH con Pointer Events (móvil + desktop) ===== */
+    /* ===== PAN + PINCH con Pointer Events ===== */
     const pointers = new Map();
     let lastPan = { x: 0, y: 0 };
     let startDist = 0;
@@ -391,14 +386,12 @@
         const factor = d / startDist;
         const newScale = startScale * factor;
 
-        // Zoom alrededor del centro del pinch
         zoomAt(pinchCenter.x, pinchCenter.y, newScale);
       }
     });
 
     function endPointer(e) {
       pointers.delete(e.pointerId);
-
       if (pointers.size === 1) {
         const remaining = [...pointers.values()][0];
         lastPan = { x: remaining.x, y: remaining.y };
@@ -425,14 +418,12 @@
       const vw = mapa.clientWidth;
       const vh = mapa.clientHeight;
 
-      // Escala "cover": llena pantalla sin negro (permitiendo pan).
       const cover = Math.max(vw / mapW, vh / mapH);
 
       const isMobile = matchMedia("(max-width: 768px)").matches;
-      scale = isMobile ? cover * 1.08 : cover;  // leve zoom en móvil
-      SCALE_MIN = cover;                         // no permitir zoom-out con negro
+      scale = isMobile ? cover * 1.08 : cover;
+      SCALE_MIN = cover;
 
-      // Centrado inicial (con cover puede recortar, pero sin negro)
       tx = (vw - mapW * scale) / 2;
       ty = (vh - mapH * scale) / 2;
 
@@ -443,7 +434,6 @@
       mapW = mapImg.naturalWidth;
       mapH = mapImg.naturalHeight;
 
-      // Fijamos el tamaño del “mundo” al tamaño real del mapa.
       mapaInner.style.width = mapW + "px";
       mapaInner.style.height = mapH + "px";
 

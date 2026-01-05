@@ -10,7 +10,7 @@
     :root{
       --polaroid-w: 225px;
       --photo-h: 158px;
-      --gap-x: 56px;
+      --gap-x: 72px; /* ✅ más gap */
     }
 
     html, body{
@@ -50,8 +50,8 @@
     /* Mundo más grande que la pantalla */
     .stage{
       position: relative;
-      width: 1400px;
-      height: 900px;
+      width: 1500px;
+      height: 1000px;
 
       background:
         radial-gradient(
@@ -62,11 +62,12 @@
         url("../../img/busan/biff-square-and-jajangmyeon/01.jpg") center / cover no-repeat;
     }
 
-    /* Fila de polaroids sobre el fondo */
+    /* ✅ fila centrada sobre el fondo */
     .row{
       position: absolute;
-      top: 170px;
-      left: 180px;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
 
       display: flex;
       gap: var(--gap-x);
@@ -159,20 +160,16 @@
       border-radius: 14px;
     }
 
-    /* Móvil: stage algo más compacto y polaroids algo más pequeñas */
+    /* Móvil */
     @media (max-width: 768px){
       :root{
         --polaroid-w: 200px;
         --photo-h: 145px;
-        --gap-x: 36px;
+        --gap-x: 54px; /* ✅ más gap también en móvil */
       }
       .stage{
-        width: 1200px;
-        height: 900px;
-      }
-      .row{
-        top: 160px;
-        left: 120px;
+        width: 1300px;
+        height: 980px;
       }
       .photo{ transform: none; }
       .polaroid{ --lift: 0; }
@@ -185,7 +182,7 @@
 
   <div class="viewport" id="viewport">
     <div class="stage" id="stage">
-      <div class="row">
+      <div class="row" id="row">
         <div class="polaroid p1" data-src="../../img/busan/biff-square-and-jajangmyeon/01.jpg">
           <div class="photo"><img src="../../img/busan/biff-square-and-jajangmyeon/01.jpg" alt=""></div>
         </div>
@@ -227,12 +224,20 @@
       if(e.key === "Escape") closeModal();
     });
 
-    // Centrado suave inicial hacia la zona de polaroids
+    // ✅ Centrado inicial REAL: centra el bloque de polaroids en el viewport
     window.addEventListener("load", () => {
       const vp = document.getElementById("viewport");
       const stage = document.getElementById("stage");
-      vp.scrollLeft = Math.max(0, (stage.offsetWidth  - vp.clientWidth)  * 0.33);
-      vp.scrollTop  = Math.max(0, (stage.offsetHeight - vp.clientHeight) * 0.14);
+      const row = document.getElementById("row");
+
+      const rowLeft = row.offsetLeft;
+      const rowTop  = row.offsetTop;
+
+      const targetX = rowLeft + row.offsetWidth  / 2 - vp.clientWidth  / 2;
+      const targetY = rowTop  + row.offsetHeight / 2 - vp.clientHeight / 2;
+
+      vp.scrollLeft = Math.max(0, Math.min(stage.offsetWidth  - vp.clientWidth,  targetX));
+      vp.scrollTop  = Math.max(0, Math.min(stage.offsetHeight - vp.clientHeight, targetY));
     });
   </script>
 </body>
