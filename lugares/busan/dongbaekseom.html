@@ -184,7 +184,6 @@
         height: 900px;
       }
 
-      /* ✅ mantener centrado también en móvil (sin top/left fijos) */
       .layout{
         left: 50%;
         top: 50%;
@@ -266,27 +265,32 @@
       const vp = document.getElementById("viewport");
       const stage = document.getElementById("stage");
       const layout = document.getElementById("layout");
+      if (!vp || !stage || !layout) return;
 
       vp.scrollTo(0, 0);
 
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          const layoutCenterX = layout.offsetLeft + layout.offsetWidth / 2;
-          const layoutCenterY = layout.offsetTop  + layout.offsetHeight / 2;
+      const doCenter = () => {
+        const cx = layout.offsetLeft + layout.offsetWidth / 2;
+        const cy = layout.offsetTop  + layout.offsetHeight / 2;
 
-          const targetX = layoutCenterX - vp.clientWidth / 2;
-          const targetY = layoutCenterY - vp.clientHeight / 2;
+        const targetX = cx - vp.clientWidth / 2;
+        const targetY = cy - vp.clientHeight / 2;
 
-          const maxX = stage.offsetWidth  - vp.clientWidth;
-          const maxY = stage.offsetHeight - vp.clientHeight;
+        const maxX = stage.offsetWidth  - vp.clientWidth;
+        const maxY = stage.offsetHeight - vp.clientHeight;
 
-          vp.scrollLeft = clamp(targetX, 0, Math.max(0, maxX));
-          vp.scrollTop  = clamp(targetY, 0, Math.max(0, maxY));
-        });
-      });
+        vp.scrollLeft = clamp(targetX, 0, Math.max(0, maxX));
+        vp.scrollTop  = clamp(targetY, 0, Math.max(0, maxY));
+      };
+
+      // 2 RAF + reintentos: Safari/iOS puede restaurar scroll después del load
+      requestAnimationFrame(() => requestAnimationFrame(doCenter));
+      setTimeout(doCenter, 80);
+      setTimeout(doCenter, 250);
     }
 
     window.addEventListener("load", centerOnLayout);
+    window.addEventListener("pageshow", centerOnLayout);
   </script>
 </body>
 </html>
