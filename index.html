@@ -20,7 +20,7 @@
       height: 100vh;
       overflow: hidden;
       background: #000;
-      touch-action: none; /* usamos pan/zoom custom */
+      touch-action: none;
     }
 
     .mapa-inner {
@@ -95,12 +95,15 @@
       padding: 10px 10px 14px;
       border-radius: 10px;
       box-shadow: 0 18px 40px rgba(0,0,0,0.45);
+
       transform: translate3d(-50%, calc(-100% - 50px), 0) rotate(-2deg);
       transform-origin: bottom center;
+
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.15s ease;
       z-index: 30;
+
       will-change: transform;
       backface-visibility: hidden;
     }
@@ -200,9 +203,7 @@
 
     let mapW = 0, mapH = 0;
 
-    function clamp(v, min, max) {
-      return Math.min(Math.max(v, min), max);
-    }
+    function clamp(v, min, max) { return Math.min(Math.max(v, min), max); }
 
     function clampPan() {
       const vw = mapa.clientWidth;
@@ -221,10 +222,7 @@
     function aplicarTransform() {
       clampPan();
       mapaInner.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
-
-      if (polaroid.classList.contains("visible") && activePin) {
-        positionPolaroid(activePin);
-      }
+      if (polaroid.classList.contains("visible") && activePin) positionPolaroid(activePin);
     }
 
     function getPointInViewport(clientX, clientY) {
@@ -290,7 +288,8 @@
       polaroid.style.display = "";
     }
 
-    // En móvil: tocar la polaroid abre la ciudad
+    // ✅ MUY IMPORTANTE: no dejes que el pan/zoom "se coma" los clics del polaroid
+    polaroid.addEventListener("pointerdown", (e) => e.stopPropagation());
     polaroid.addEventListener("click", (e) => {
       e.stopPropagation();
       const isTouch = matchMedia("(hover: none)").matches;
@@ -301,6 +300,9 @@
     });
 
     pins.forEach(pin => {
+      // ✅ Impide que el gesto de mapa capture cuando empiezas sobre un pin
+      pin.addEventListener("pointerdown", (e) => e.stopPropagation());
+
       pin.addEventListener("mouseenter", () => showPolaroid(pin));
       pin.addEventListener("mouseleave", () => {
         if (matchMedia("(hover: hover)").matches) hidePolaroid();
@@ -309,19 +311,17 @@
       pin.addEventListener("touchstart", () => movedDuringTouch = false, { passive: true });
       pin.addEventListener("touchmove", () => movedDuringTouch = true, { passive: true });
 
-      pin.addEventListener("click", (e) => {
-        const isTouch = matchMedia("(hover: none)").matches;
+      pin.addEventListener("click", e => {
+        e.stopPropagation();
 
-        // ✅ CAMBIO 1: en desktop, click = navegar SIEMPRE (sin “primer click polaroid”)
+        const isTouch = matchMedia("(hover: none)").matches;
         if (!isTouch) {
           location.href = pin.dataset.link;
           return;
         }
 
-        // móvil: evita activar si venías arrastrando
         if (movedDuringTouch) return;
 
-        // móvil: primer tap -> mostrar polaroid; segundo tap -> navegar
         if (lastTouchPin !== pin) {
           e.preventDefault();
           showPolaroid(pin);
@@ -332,7 +332,7 @@
       });
     });
 
-    mapa.addEventListener("click", (e) => {
+    mapa.addEventListener("click", e => {
       if (e.target.classList && e.target.classList.contains("pin")) return;
       if (e.target.closest && e.target.closest("#polaroid")) return;
       hidePolaroid();
@@ -351,6 +351,9 @@
     }
 
     mapa.addEventListener("pointerdown", (e) => {
+      // ✅ Si empiezas el gesto sobre pin/polaroid, NO captures pan/zoom
+      if (e.target.closest && (e.target.closest(".pin") || e.target.closest("#polaroid"))) return;
+
       mapa.setPointerCapture(e.pointerId);
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
@@ -398,8 +401,7 @@
     mapa.addEventListener("pointerup", endPointer);
     mapa.addEventListener("pointercancel", endPointer);
 
-    /* Trackpad / rueda */
-    mapa.addEventListener("wheel", (e) => {
+    mapa.addEventListener("wheel", e => {
       e.preventDefault();
       if (e.ctrlKey) {
         const factor = Math.exp(-e.deltaY * 0.002);

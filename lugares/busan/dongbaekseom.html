@@ -10,7 +10,7 @@
     :root{
       --polaroid-w: 235px;
       --photo-h: 165px;
-      --gap-x: 96px;  /* ✅ más gap entre las 2 de abajo (antes 56) */
+      --gap-x: 96px;  /* ✅ más gap entre las 2 de abajo */
       --gap-y: 52px;
     }
 
@@ -53,7 +53,6 @@
       position: relative;
       width: 1400px;
       height: 900px;
-
       background:
         radial-gradient(
           ellipse at center,
@@ -63,11 +62,12 @@
         url("../../img/busan/dongbaekseom/01.jpg") center 45% / cover no-repeat;
     }
 
-    /* Layout 1 arriba + 2 abajo, pero en el “mundo” */
+    /* ✅ Layout centrado REAL sobre el fondo */
     .layout{
       position: absolute;
-      top: 150px;
-      left: 200px;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
 
       display: grid;
       grid-template-rows: auto auto;
@@ -100,7 +100,6 @@
       position: relative;
       user-select: none;
       -webkit-tap-highlight-color: transparent;
-
       transform: translateY(var(--lift,0)) rotate(var(--r,0deg));
       transition: transform .16s ease, box-shadow .16s ease;
     }
@@ -177,17 +176,21 @@
       :root{
         --polaroid-w: 200px;
         --photo-h: 145px;
-        --gap-x: 72px;   /* ✅ gap también mayor en móvil */
+        --gap-x: 72px;
         --gap-y: 34px;
       }
       .stage{
         width: 1200px;
         height: 900px;
       }
+
+      /* ✅ mantener centrado también en móvil (sin top/left fijos) */
       .layout{
-        top: 140px;
-        left: 120px;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
       }
+
       .photo{ transform: none; }
       .polaroid{ --lift: 0; }
     }
@@ -199,7 +202,6 @@
 
   <div class="viewport" id="viewport">
     <div class="stage" id="stage">
-      <!-- ✅ id para centrar EXACTO -->
       <section class="layout" id="layout">
 
         <div class="row top">
@@ -234,7 +236,6 @@
   </div>
 
   <script>
-    // ✅ evita que el navegador “recuerde” scroll previo (cuando soporta)
     if ("scrollRestoration" in history) history.scrollRestoration = "manual";
 
     const modal = document.getElementById("modal");
@@ -259,7 +260,6 @@
       if (e.key === "Escape") closeModal();
     });
 
-    // ✅ Centrado real al layout (no porcentajes) y con 2 frames para asegurar layout listo
     function clamp(v, min, max){ return Math.min(Math.max(v, min), max); }
 
     function centerOnLayout(){
@@ -267,7 +267,6 @@
       const stage = document.getElementById("stage");
       const layout = document.getElementById("layout");
 
-      // resetea por si el navegador intentó restaurar
       vp.scrollTo(0, 0);
 
       requestAnimationFrame(() => {

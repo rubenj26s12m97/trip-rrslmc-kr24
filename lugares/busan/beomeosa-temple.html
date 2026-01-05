@@ -10,7 +10,8 @@
     :root{
       --polaroid-w: 260px;
       --photo-h: 180px;
-      --gap-x: 64px; /* ✅ más gap */
+      --gap-x: 64px;     /* ✅ más gap */
+      --center-y: 24px;  /* ✅ ajuste fino: + baja, - sube (prueba 0–40) */
     }
 
     html, body{
@@ -47,7 +48,7 @@
       background: #000;
     }
 
-    /* ✅ Mundo más grande que la pantalla */
+    /* Mundo */
     .stage{
       position: relative;
       width: 1400px;
@@ -66,12 +67,12 @@
       background-position: center, left center, right center;
     }
 
-    /* ✅ Fila centrada exactamente entre ambas mitades */
+    /* ✅ Fila centrada en X e Y (entre ambas mitades) + ajuste fino */
     .row{
       position: absolute;
-      top: 160px;
       left: 50%;
-      transform: translateX(-50%);
+      top: 50%;
+      transform: translate(-50%, calc(-50% + var(--center-y)));
 
       display: flex;
       gap: var(--gap-x);
@@ -138,7 +139,7 @@
       pointer-events: none;
     }
 
-    /* Offsets (3 fotos) */
+    /* Offsets */
     .p1{ --lift:  10px; --r:-2deg; }
     .p2{ --lift:  -6px; --r: 2deg; }
     .p3{ --lift:  14px; --r:-1deg; }
@@ -162,19 +163,17 @@
       border-radius: 14px;
     }
 
-    /* ✅ Móvil */
+    /* Móvil */
     @media (max-width: 768px){
       :root{
         --polaroid-w: 220px;
         --photo-h: 160px;
         --gap-x: 44px;
+        --center-y: 18px; /* ✅ suele necesitar un pelín menos en móvil */
       }
       .stage{
         width: 1200px;
         height: 900px;
-      }
-      .row{
-        top: 150px;
       }
       .photo{ transform: none; }
       .polaroid{ --lift: 0; }
@@ -187,7 +186,8 @@
 
   <div class="viewport" id="viewport">
     <div class="stage" id="stage">
-      <div class="row">
+      <!-- ✅ id para centrar EXACTO -->
+      <div class="row" id="row">
         <div class="polaroid p1" data-src="../../img/busan/beomeosa-temple/03.jpg">
           <div class="photo"><img src="../../img/busan/beomeosa-temple/03.jpg" alt=""></div>
         </div>
@@ -208,6 +208,8 @@
   </div>
 
   <script>
+    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+
     const modal = document.getElementById("modal");
     const modalImg = document.getElementById("modalImg");
 
@@ -229,15 +231,34 @@
       if(e.key === "Escape") closeModal();
     });
 
-    /* ✅ Centrado inicial real (evita esquina) */
-    window.addEventListener("load", () => {
+    // ✅ Centrado inicial REAL sobre la fila (más robusto que centrar el stage)
+    function clamp(v, min, max){ return Math.min(Math.max(v, min), max); }
+
+    function centerOnRow(){
       const vp = document.getElementById("viewport");
       const stage = document.getElementById("stage");
+      const row = document.getElementById("row");
 
-      // centra el viewport en el centro exacto del mundo
-      vp.scrollLeft = Math.max(0, (stage.offsetWidth  - vp.clientWidth)  / 2);
-      vp.scrollTop  = Math.max(0, (stage.offsetHeight - vp.clientHeight) / 2);
-    });
+      vp.scrollTo(0, 0);
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const cx = row.offsetLeft + row.offsetWidth / 2;
+          const cy = row.offsetTop  + row.offsetHeight / 2;
+
+          const targetX = cx - vp.clientWidth / 2;
+          const targetY = cy - vp.clientHeight / 2;
+
+          const maxX = stage.offsetWidth  - vp.clientWidth;
+          const maxY = stage.offsetHeight - vp.clientHeight;
+
+          vp.scrollLeft = clamp(targetX, 0, Math.max(0, maxX));
+          vp.scrollTop  = clamp(targetY, 0, Math.max(0, maxY));
+        });
+      });
+    }
+
+    window.addEventListener("load", centerOnRow);
   </script>
 </body>
 </html>

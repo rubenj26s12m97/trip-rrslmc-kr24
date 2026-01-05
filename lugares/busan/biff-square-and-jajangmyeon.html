@@ -10,7 +10,8 @@
     :root{
       --polaroid-w: 225px;
       --photo-h: 158px;
-      --gap-x: 84px; /* ✅ más separación (antes 56) */
+      --gap-x: 84px;     /* ✅ más separación */
+      --center-y: 20px;  /* ✅ ajuste fino: + baja, - sube */
     }
 
     html, body{
@@ -18,7 +19,7 @@
       height: 100%;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background: #000;
-      overflow: hidden; /* el scroll lo hace .viewport */
+      overflow: hidden;
     }
 
     .back{
@@ -58,10 +59,12 @@
         url("../../img/busan/biff-square-and-jajangmyeon/01.jpg") center / cover no-repeat;
     }
 
+    /* ✅ bloque centrado en el fondo (X e Y) */
     .row{
       position: absolute;
-      top: 170px;
-      left: 180px;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, calc(-50% + var(--center-y)));
 
       display: flex;
       gap: var(--gap-x);
@@ -153,15 +156,12 @@
       :root{
         --polaroid-w: 200px;
         --photo-h: 145px;
-        --gap-x: 64px; /* ✅ también más gap en móvil */
+        --gap-x: 64px;
+        --center-y: 16px;
       }
       .stage{
         width: 1200px;
         height: 900px;
-      }
-      .row{
-        top: 160px;
-        left: 120px;
       }
       .photo{ transform: none; }
       .polaroid{ --lift: 0; }
@@ -174,8 +174,7 @@
 
   <div class="viewport" id="viewport">
     <div class="stage" id="stage">
-      <!-- ✅ id para centrar EXACTO -->
-      <div class="row" id="layout">
+      <div class="row" id="row">
         <div class="polaroid p1" data-src="../../img/busan/biff-square-and-jajangmyeon/01.jpg">
           <div class="photo"><img src="../../img/busan/biff-square-and-jajangmyeon/01.jpg" alt=""></div>
         </div>
@@ -220,17 +219,17 @@
 
     function clamp(v, min, max){ return Math.min(Math.max(v, min), max); }
 
-    function centerOnLayout(){
+    function centerOnRow(){
       const vp = document.getElementById("viewport");
       const stage = document.getElementById("stage");
-      const layout = document.getElementById("layout");
+      const row = document.getElementById("row");
 
       vp.scrollTo(0, 0);
 
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          const cx = layout.offsetLeft + layout.offsetWidth / 2;
-          const cy = layout.offsetTop  + layout.offsetHeight / 2;
+          const cx = row.offsetLeft + row.offsetWidth / 2;
+          const cy = row.offsetTop  + row.offsetHeight / 2;
 
           const targetX = cx - vp.clientWidth / 2;
           const targetY = cy - vp.clientHeight / 2;
@@ -244,7 +243,7 @@
       });
     }
 
-    window.addEventListener("load", centerOnLayout);
+    window.addEventListener("load", centerOnRow);
   </script>
 </body>
 </html>
