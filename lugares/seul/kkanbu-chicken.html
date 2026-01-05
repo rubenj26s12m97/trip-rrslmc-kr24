@@ -38,6 +38,7 @@
         rgba(0,0,0,0.6)
       );
       z-index: 1;
+      pointer-events: none;
     }
 
     .back {
@@ -81,8 +82,8 @@
       cursor: pointer;
       position: absolute;
       user-select: none;
+      -webkit-tap-highlight-color: transparent;
 
-      /* Transform base estable */
       transform: translate(var(--tx, 0), var(--ty, 0)) rotate(var(--r, 0deg));
       transition: transform .16s ease, box-shadow .16s ease;
       will-change: transform;
@@ -94,6 +95,7 @@
         rotate(var(--r, 0deg))
         scale(1.03);
       box-shadow: 0 18px 38px rgba(0,0,0,0.45);
+      z-index: 20;
     }
 
     .polaroid::before{
@@ -125,24 +127,31 @@
       display: block;
     }
 
-    /* Posiciones */
-    .p1 {
+    /* ✅ Posiciones (sin mezclar % con translate()) */
+    .p1{
       top: 0;
       left: 50%;
-      --tx: -50%;
+      transform: translateX(-50%) translateY(var(--ty, 0px)) rotate(var(--r, 0deg));
       --ty: 0px;
       --r: -2deg;
     }
+    .p1:hover{
+      transform: translateX(-50%) translateY(calc(var(--ty, 0px) - 2px)) rotate(var(--r, 0deg)) scale(1.03);
+    }
 
-    .p2 {
+    .p2{
       bottom: 0;
       left: 0;
+      --tx: 0px;
+      --ty: 0px;
       --r: 2deg;
     }
 
-    .p3 {
+    .p3{
       bottom: 0;
       right: 0;
+      --tx: 0px;
+      --ty: 0px;
       --r: -1deg;
     }
 
@@ -156,6 +165,7 @@
       justify-content: center;
       z-index: 50;
       padding: 18px;
+      box-sizing: border-box;
     }
 
     .modal.open { display: flex; }
@@ -173,7 +183,7 @@
         --photo-h: 130px;
         --base-gap: 56px;
       }
-      .pyramid { transform: scale(0.95); }
+      .pyramid { transform: scale(0.95); transform-origin: center top; }
     }
   </style>
 </head>
@@ -187,41 +197,44 @@
   <main class="board">
     <div class="pyramid">
       <div class="polaroid p1" data-src="../../img/seul/kkanbu-chicken/01.jpg">
-        <div class="photo"><img src="../../img/seul/kkanbu-chicken/01.jpg"></div>
+        <div class="photo"><img src="../../img/seul/kkanbu-chicken/01.jpg" alt=""></div>
       </div>
 
       <div class="polaroid p2" data-src="../../img/seul/kkanbu-chicken/02.jpg">
-        <div class="photo"><img src="../../img/seul/kkanbu-chicken/02.jpg"></div>
+        <div class="photo"><img src="../../img/seul/kkanbu-chicken/02.jpg" alt=""></div>
       </div>
 
       <div class="polaroid p3" data-src="../../img/seul/kkanbu-chicken/03.jpg">
-        <div class="photo"><img src="../../img/seul/kkanbu-chicken/03.jpg"></div>
+        <div class="photo"><img src="../../img/seul/kkanbu-chicken/03.jpg" alt=""></div>
       </div>
     </div>
   </main>
 
   <div class="modal" id="modal">
-    <img id="modalImg">
+    <img id="modalImg" alt="">
   </div>
 
   <script>
     const modal = document.getElementById("modal");
     const modalImg = document.getElementById("modalImg");
 
-    document.querySelectorAll(".polaroid").forEach(p => {
-      p.addEventListener("click", () => {
-        modalImg.src = p.dataset.src;
-        modal.classList.add("open");
-      });
-    });
-
-    modal.addEventListener("click", () => {
+    function openModal(src){
+      modalImg.src = src;
+      modal.classList.add("open");
+    }
+    function closeModal(){
       modal.classList.remove("open");
       modalImg.src = "";
+    }
+
+    document.querySelectorAll(".polaroid").forEach(card => {
+      card.addEventListener("click", () => openModal(card.dataset.src || card.querySelector("img")?.src));
     });
 
+    modal.addEventListener("click", closeModal);
+
     window.addEventListener("keydown", e => {
-      if(e.key === "Escape") modal.classList.remove("open");
+      if(e.key === "Escape") closeModal();
     });
   </script>
 </body>

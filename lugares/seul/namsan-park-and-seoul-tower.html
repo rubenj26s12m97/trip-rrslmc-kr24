@@ -43,6 +43,7 @@
         rgba(0,0,0,0.7)
       );
       z-index: 1;
+      pointer-events: none;
     }
 
     .back{
@@ -80,6 +81,7 @@
       display: grid;
       column-gap: var(--gap-x);
       justify-content: center;
+      align-items: start;
     }
 
     .row.r2{ grid-template-columns: repeat(2, var(--polaroid-w)); }
@@ -94,8 +96,11 @@
       cursor: pointer;
       position: relative;
       user-select: none;
+      -webkit-tap-highlight-color: transparent;
+
       transform: translateY(var(--lift,0)) rotate(var(--r,0deg));
       transition: transform .16s ease, box-shadow .16s ease;
+      will-change: transform;
     }
 
     .polaroid:hover{
@@ -119,6 +124,7 @@
       box-shadow: 0 3px 10px rgba(0,0,0,0.35);
     }
 
+    /* 🔑 Foto des-rotada para evitar blur */
     .photo{
       margin-top: 10px;
       width: 100%;
@@ -126,7 +132,9 @@
       border-radius: 8px;
       overflow: hidden;
       background:#eee;
+
       transform: rotate(calc(var(--r,0deg) * -1));
+      transform-origin: center;
     }
 
     .photo img{
@@ -152,6 +160,7 @@
       justify-content: center;
       z-index: 50;
       padding: 18px;
+      box-sizing: border-box;
     }
     .modal.open{ display:flex; }
     .modal img{
@@ -188,21 +197,35 @@
 
       <!-- Fila 1: 2 -->
       <div class="row r2">
-        <div class="polaroid p1"><div class="photo"><img src="../../img/seul/namsan-park-and-seoul-tower/02.jpg"></div></div>
-        <div class="polaroid p2"><div class="photo"><img src="../../img/seul/namsan-park-and-seoul-tower/03.jpg"></div></div>
+        <div class="polaroid p1" data-src="../../img/seul/namsan-park-and-seoul-tower/02.jpg">
+          <div class="photo"><img src="../../img/seul/namsan-park-and-seoul-tower/02.jpg" alt=""></div>
+        </div>
+        <div class="polaroid p2" data-src="../../img/seul/namsan-park-and-seoul-tower/03.jpg">
+          <div class="photo"><img src="../../img/seul/namsan-park-and-seoul-tower/03.jpg" alt=""></div>
+        </div>
       </div>
 
       <!-- Fila 2: 3 -->
       <div class="row r3">
-        <div class="polaroid p3"><div class="photo"><img src="../../img/seul/namsan-park-and-seoul-tower/04.jpg"></div></div>
-        <div class="polaroid p4"><div class="photo"><img src="../../img/seul/namsan-park-and-seoul-tower/05.jpg"></div></div>
-        <div class="polaroid p1"><div class="photo"><img src="../../img/seul/namsan-park-and-seoul-tower/06.jpg"></div></div>
+        <div class="polaroid p3" data-src="../../img/seul/namsan-park-and-seoul-tower/04.jpg">
+          <div class="photo"><img src="../../img/seul/namsan-park-and-seoul-tower/04.jpg" alt=""></div>
+        </div>
+        <div class="polaroid p4" data-src="../../img/seul/namsan-park-and-seoul-tower/05.jpg">
+          <div class="photo"><img src="../../img/seul/namsan-park-and-seoul-tower/05.jpg" alt=""></div>
+        </div>
+        <div class="polaroid p1" data-src="../../img/seul/namsan-park-and-seoul-tower/06.jpg">
+          <div class="photo"><img src="../../img/seul/namsan-park-and-seoul-tower/06.jpg" alt=""></div>
+        </div>
       </div>
 
       <!-- Fila 3: 2 -->
       <div class="row r2">
-        <div class="polaroid p2"><div class="photo"><img src="../../img/seul/namsan-park-and-seoul-tower/07.jpg"></div></div>
-        <div class="polaroid p3"><div class="photo"><img src="../../img/seul/namsan-park-and-seoul-tower/08.jpg"></div></div>
+        <div class="polaroid p2" data-src="../../img/seul/namsan-park-and-seoul-tower/07.jpg">
+          <div class="photo"><img src="../../img/seul/namsan-park-and-seoul-tower/07.jpg" alt=""></div>
+        </div>
+        <div class="polaroid p3" data-src="../../img/seul/namsan-park-and-seoul-tower/08.jpg">
+          <div class="photo"><img src="../../img/seul/namsan-park-and-seoul-tower/08.jpg" alt=""></div>
+        </div>
       </div>
 
     </div>
@@ -217,23 +240,25 @@
     const modal = document.getElementById("modal");
     const modalImg = document.getElementById("modalImg");
 
-    document.querySelectorAll(".polaroid").forEach(p => {
-      p.addEventListener("click", () => {
-        modalImg.src = p.querySelector("img").src;
-        modal.classList.add("open");
+    function openModal(src){
+      modalImg.src = src;
+      modal.classList.add("open");
+    }
+    function closeModal(){
+      modal.classList.remove("open");
+      modalImg.src = "";
+    }
+
+    document.querySelectorAll(".polaroid").forEach(card => {
+      card.addEventListener("click", () => {
+        openModal(card.dataset.src || card.querySelector("img")?.src);
       });
     });
 
-    modal.addEventListener("click", () => {
-      modal.classList.remove("open");
-      modalImg.src = "";
-    });
+    modal.addEventListener("click", closeModal);
 
     window.addEventListener("keydown", e => {
-      if (e.key === "Escape") {
-        modal.classList.remove("open");
-        modalImg.src = "";
-      }
+      if (e.key === "Escape") closeModal();
     });
   </script>
 </body>

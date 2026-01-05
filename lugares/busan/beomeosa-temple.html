@@ -8,17 +8,21 @@
 
   <style>
     :root{
-  --polaroid-w: 260px;
-  --photo-h: 180px;
-  --gap-x: 52px;
-}
+      --polaroid-w: 260px;
+      --photo-h: 180px;
+      --gap-x: 52px;
+    }
 
     html, body{
       margin: 0;
       height: 100%;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background: #000;
-      overflow: hidden;
+
+      /* ✅ permitir scroll */
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     /* Fondos laterales */
@@ -35,16 +39,16 @@
     }
 
     .bg-left{
-  left: 0;
-  background-image: url("../../img/busan/beomeosa-temple/01.jpg");
-  background-position: center 18%;
-}
+      left: 0;
+      background-image: url("../../img/busan/beomeosa-temple/01.jpg");
+      background-position: center 18%;
+    }
 
-.bg-right{
-  right: 0;
-  background-image: url("../../img/busan/beomeosa-temple/02.jpg");
-  background-position: center 20%;
-}
+    .bg-right{
+      right: 0;
+      background-image: url("../../img/busan/beomeosa-temple/02.jpg");
+      background-position: center 20%;
+    }
 
     /* Velo unificador */
     .shade{
@@ -57,6 +61,7 @@
         rgba(0,0,0,0.55)
       );
       z-index: 1;
+      pointer-events: none;
     }
 
     .back{
@@ -73,13 +78,14 @@
       box-shadow: 0 8px 18px rgba(0,0,0,0.25);
     }
 
+    /* ✅ ya no fixed: permite crecer y hacer scroll */
     .board{
-      position: fixed;
-      inset: 0;
+      position: relative;
       z-index: 5;
+      min-height: 100vh;
       display: grid;
       place-items: center;
-      padding-top: 90px;
+      padding: 90px 18px 60px;
       box-sizing: border-box;
     }
 
@@ -105,12 +111,14 @@
       transition: transform .16s ease, box-shadow .16s ease;
     }
 
-    .polaroid:hover{
-      transform: translateY(calc(var(--lift,0) - 2px))
-                 rotate(var(--r,0deg))
-                 scale(1.03);
-      box-shadow: 0 20px 44px rgba(0,0,0,0.55);
-      z-index: 20;
+    @media (hover: hover){
+      .polaroid:hover{
+        transform: translateY(calc(var(--lift,0) - 2px))
+                   rotate(var(--r,0deg))
+                   scale(1.03);
+        box-shadow: 0 20px 44px rgba(0,0,0,0.55);
+        z-index: 20;
+      }
     }
 
     /* Chincheta */
@@ -168,18 +176,26 @@
       border-radius: 14px;
     }
 
+    /* ✅ móvil: mantener 3 columnas y permitir scroll horizontal */
     @media (max-width: 980px){
-  :root{
-    --polaroid-w: 210px;
-    --photo-h: 150px;
-    --gap-x: 28px;
-  }
+      :root{
+        --polaroid-w: 220px;
+        --photo-h: 160px;
+        --gap-x: 22px;
+      }
 
       .row{
-        grid-template-columns: repeat(2, var(--polaroid-w));
-        row-gap: 28px;
+        grid-template-columns: repeat(3, var(--polaroid-w));
+        column-gap: var(--gap-x);
+        justify-content: start;
+
+        overflow-x: auto;
+        overflow-y: visible;
+        -webkit-overflow-scrolling: touch;
+        padding: 0 10px 10px;
+        scroll-snap-type: x mandatory;
       }
-      .polaroid{ --lift:0; --r:0deg; }
+      .polaroid{ scroll-snap-align: center; --lift:0; }
       .photo{ transform:none; }
 
       .bg-left,
@@ -217,7 +233,7 @@
   </main>
 
   <div class="modal" id="modal">
-    <img id="modalImg">
+    <img id="modalImg" alt="">
   </div>
 
   <script>
@@ -245,3 +261,4 @@
   </script>
 </body>
 </html>
+

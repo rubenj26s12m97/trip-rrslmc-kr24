@@ -55,6 +55,7 @@
         rgba(0,0,0,0.62)
       );
       z-index: 1;
+      pointer-events: none;
     }
 
     .back{
@@ -107,6 +108,7 @@
       user-select: none;
       transform: translateY(var(--lift,0)) rotate(var(--r,0deg));
       transition: transform .16s ease, box-shadow .16s ease;
+      -webkit-tap-highlight-color: transparent;
     }
 
     .polaroid:hover{
@@ -137,7 +139,9 @@
       border-radius: 10px;
       overflow: hidden;
       background:#eee;
+      /* anti-blur: des-rotamos la foto */
       transform: rotate(calc(var(--r,0deg) * -1));
+      transform-origin: center;
     }
 
     .photo img{
@@ -162,6 +166,7 @@
       justify-content: center;
       z-index: 50;
       padding: 18px;
+      box-sizing: border-box;
     }
     .modal.open{ display:flex; }
     .modal img{
@@ -182,9 +187,7 @@
         padding: 90px 18px 60px;
       }
 
-      .half{
-        height: auto;
-      }
+      .half{ height: auto; }
 
       :root{
         --polaroid-w: 220px;
@@ -195,6 +198,7 @@
       .polaroid{ --lift:0; --r:0deg; }
       .photo{ transform:none; }
 
+      /* en móvil dejamos un solo “fondo” suave */
       .bg-left, .bg-right{
         width: 100%;
         left: 0;
@@ -215,25 +219,26 @@
   <main class="board">
     <!-- Mitad izquierda → fondo 01 -->
     <div class="half left">
-      <div class="polaroid p3">
+      <div class="polaroid p3" data-src="../../img/seul/ikseon-dong-hanok-village-and-korean-bbq/03.jpg">
         <div class="photo">
-          <img src="../../img/seul/ikseon-dong-hanok-village-and-korean-bbq/03.jpg">
+          <img src="../../img/seul/ikseon-dong-hanok-village-and-korean-bbq/03.jpg" alt="">
         </div>
       </div>
     </div>
 
     <!-- Mitad derecha → fondo 02 -->
     <div class="half right">
-      <div class="polaroid p4">
-  <div class="photo">
-    <img src="../../img/seul/ikseon-dong-hanok-village-and-korean-bbq/04.jpg"
-         style="object-position: center 20%;">
-  </div>
-</div>
-
-      <div class="polaroid p5">
+      <div class="polaroid p4" data-src="../../img/seul/ikseon-dong-hanok-village-and-korean-bbq/04.jpg">
         <div class="photo">
-          <img src="../../img/seul/ikseon-dong-hanok-village-and-korean-bbq/05.jpg">
+          <img src="../../img/seul/ikseon-dong-hanok-village-and-korean-bbq/04.jpg"
+               alt=""
+               style="object-position: center 20%;">
+        </div>
+      </div>
+
+      <div class="polaroid p5" data-src="../../img/seul/ikseon-dong-hanok-village-and-korean-bbq/05.jpg">
+        <div class="photo">
+          <img src="../../img/seul/ikseon-dong-hanok-village-and-korean-bbq/05.jpg" alt="">
         </div>
       </div>
     </div>
@@ -241,31 +246,34 @@
 
   <!-- Modal -->
   <div class="modal" id="modal">
-    <img id="modalImg">
+    <img id="modalImg" alt="">
   </div>
 
   <script>
     const modal = document.getElementById("modal");
     const modalImg = document.getElementById("modalImg");
 
+    function openModal(src){
+      modalImg.src = src;
+      modal.classList.add("open");
+    }
+    function closeModal(){
+      modal.classList.remove("open");
+      modalImg.src = "";
+    }
+
+    // ✅ Usa data-src si existe; si no, cae al img.src (más robusto)
     document.querySelectorAll(".polaroid").forEach(p => {
       p.addEventListener("click", () => {
-        const img = p.querySelector("img");
-        modalImg.src = img.src;
-        modal.classList.add("open");
+        const src = p.dataset.src || p.querySelector("img")?.src;
+        if (src) openModal(src);
       });
     });
 
-    modal.addEventListener("click", () => {
-      modal.classList.remove("open");
-      modalImg.src = "";
-    });
+    modal.addEventListener("click", closeModal);
 
     window.addEventListener("keydown", e => {
-      if (e.key === "Escape") {
-        modal.classList.remove("open");
-        modalImg.src = "";
-      }
+      if (e.key === "Escape") closeModal();
     });
   </script>
 </body>

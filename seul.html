@@ -15,34 +15,35 @@
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     }
 
-    /* Botón volver (GRANDE) */
+    /* Botón volver (ANTES: gigante) */
     .back {
       position: fixed;
-      top: 14px;
-      left: 14px;
+      top: 12px;
+      left: 12px;
       background: rgba(255,255,255,0.95);
-      padding: 30px 34px;
-      border-radius: 24px;
+      padding: 12px 14px;
+      border-radius: 14px;
       cursor: pointer;
-      font-size: 32px;
+      font-size: 16px;
       font-weight: 700;
       user-select: none;
       z-index: 9999;
       transform: translateZ(0);
+      line-height: 1;
     }
 
-    /* Tooltip superior */
+    /* Tooltip superior (ANTES: grande) */
     .tooltip {
       position: fixed;
-      left: 14px;
-      top: 88px;
+      left: 12px;
+      top: 54px;
       z-index: 9999;
       background: rgba(0,0,0,0.72);
       color: rgba(255,255,255,0.97);
-      padding: 14px 18px;
-      border-radius: 16px;
-      font-size: 18px;
-      max-width: calc(100vw - 28px);
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 14px;
+      max-width: calc(100vw - 24px);
       display: none;
       user-select: none;
       transform: translateZ(0);
@@ -55,6 +56,7 @@
       height: 100vh;
       overflow: hidden;
       touch-action: none;
+      background: #000;
     }
 
     /* Capa transformable (mapa + pins) */
@@ -77,10 +79,10 @@
       transform: translateZ(0);
     }
 
-    /* Pins (VOLVEMOS A <img>) */
+    /* Pins (ANTES: grandes) */
     .pin {
       position: absolute;
-      width: 70px;
+      width: 54px;              /* desktop más pequeño */
       height: auto;
       z-index: 10;
       cursor: pointer;
@@ -88,16 +90,38 @@
       -webkit-tap-highlight-color: transparent;
       user-select: none;
       -webkit-user-drag: none;
-      touch-action: none;
+      touch-action: manipulation;
       backface-visibility: hidden;
       will-change: transform, filter;
       transition: transform 0.15s ease, filter 0.15s ease;
     }
 
-    .pin:hover,
-    .pin.activo {
-      transform: translate(-50%, -50%) scale(1.10) translateZ(0);
-      z-index: 20;
+    /* Hover solo en dispositivos con hover real */
+    @media (hover: hover) {
+      .pin:hover,
+      .pin.activo {
+        transform: translate(-50%, -50%) scale(1.08) translateZ(0);
+        z-index: 20;
+      }
+    }
+
+    /* En táctil, nada de hover fantasma; activo más suave */
+    @media (hover: none) {
+      .pin.activo {
+        transform: translate(-50%, -50%) scale(1.05) translateZ(0);
+        z-index: 20;
+      }
+    }
+
+    /* Móvil: pin más pequeño + área de toque más grande (sin agrandar icono) */
+    @media (max-width: 768px) {
+      .pin { width: 34px; }
+    }
+    @media (hover: none) {
+      .pin {
+        padding: 14px;         /* aumenta “tap target” */
+        margin: -14px;         /* compensa para no mover el centro visual */
+      }
     }
 
     /* Colores (ajustados) */
@@ -106,42 +130,42 @@
     .day-azul    { filter: hue-rotate(200deg) saturate(95%) brightness(95%); }
     .day-verde   { filter: hue-rotate(110deg) saturate(95%) brightness(95%); }
 
-    /* Leyenda (GRANDE) */
+    /* Leyenda (ANTES: gigante) */
     .legend {
       position: fixed;
-      bottom: 14px;
-      left: 14px;
+      bottom: 12px;
+      left: 12px;
       background: rgba(0,0,0,0.60);
       color: rgba(255,255,255,0.95);
-      padding: 30px 34px;
-      border-radius: 24px;
-      font-size: 32px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      font-size: 14px;
       display: flex;
-      gap: 18px;
+      gap: 12px;
       align-items: center;
       z-index: 9999;
       flex-wrap: wrap;
-      max-width: calc(100vw - 28px);
+      max-width: calc(100vw - 24px);
       transform: translateZ(0);
     }
 
-    .key { display: inline-flex; gap: 10px; align-items: center; white-space: nowrap; }
-    .dot { width: 18px; height: 18px; border-radius: 999px; display: inline-block; }
+    .key { display: inline-flex; gap: 8px; align-items: center; white-space: nowrap; }
+    .dot { width: 10px; height: 10px; border-radius: 999px; display: inline-block; }
 
     .c-granate { background: #8b1d2c; }
     .c-dorado  { background: #e0b83f; }
     .c-azul    { background: #1f6fa6; }
     .c-verde   { background: #2f8f4e; }
 
-    /* Etiqueta flotante junto al pin (lo que faltaba) */
+    /* Etiqueta flotante junto al pin (ANTES: gigante) */
     .pin-label {
       position: absolute;
       z-index: 99999;
       background: rgba(0,0,0,0.78);
       color: #fff;
-      padding: 18px 22px;
-      border-radius: 22px;
-      font-size: 26px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      font-size: 14px;
       font-weight: 500;
       white-space: nowrap;
       pointer-events: none;
@@ -152,7 +176,26 @@
 
     .pin-label.show {
       opacity: 1;
-      transform: translate(-50%, -18px);
+      transform: translate(-50%, -16px);
+    }
+
+    /* Ajustes extra en móvil para UI */
+    @media (max-width: 768px) {
+      .back {
+        padding: 10px 12px;
+        border-radius: 12px;
+        font-size: 14px;
+      }
+      .tooltip {
+        top: 50px;
+        font-size: 13px;
+      }
+      .legend {
+        font-size: 13px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        gap: 10px;
+      }
     }
   </style>
 </head>
@@ -165,131 +208,131 @@
     <div class="mapa-inner" id="mapaInner">
       <img src="img/seul.png" alt="Mapa de Seúl" class="mapa-base">
 
-      <!-- ======= TUS PINS EXACTOS (los de siempre) ======= -->
+      <!-- ======= PINS ======= -->
       <!-- DÍA 0 -->
       <a href="lugares/seul/kkanbu-chicken.html">
-  <img src="img/pin-lugar.png"
-       class="pin day-granate"
-       style="top:89%; left:79%;"
-       data-day="0"
-       data-name="Kkanbu Chicken">
-</a>
+        <img src="img/pin-lugar.png"
+             class="pin day-granate"
+             style="top:89%; left:79%;"
+             data-day="0"
+             data-name="Kkanbu Chicken">
+      </a>
 
       <!-- DÍA 1 -->
       <a href="lugares/seul/insa-dong-culture-street.html">
-  <img src="img/pin-lugar.png"
-       class="pin day-granate"
-       style="top:20%; left:41%;"
-       data-day="1"
-       data-name="Insa-dong Culture Street">
-</a>
+        <img src="img/pin-lugar.png"
+             class="pin day-granate"
+             style="top:20%; left:41%;"
+             data-day="1"
+             data-name="Insa-dong Culture Street">
+      </a>
 
       <a href="lugares/seul/bukchon-hanok-village.html">
-  <img src="img/pin-lugar.png"
-       class="pin day-granate"
-       style="top:10%; left:40%;"
-       data-day="1"
-       data-name="Bukchon Hanok Village">
-</a>
+        <img src="img/pin-lugar.png"
+             class="pin day-granate"
+             style="top:10%; left:40%;"
+             data-day="1"
+             data-name="Bukchon Hanok Village">
+      </a>
 
       <a href="lugares/seul/ikseon-dong-hanok-village-and-korean-bbq.html">
-  <img src="img/pin-lugar.png"
-       class="pin day-granate"
-       style="top:18%; left:43%;"
-       data-day="1"
-       data-name="Ikseon-dong Hanok Village and Korean BBQ">
-</a>
+        <img src="img/pin-lugar.png"
+             class="pin day-granate"
+             style="top:18%; left:43%;"
+             data-day="1"
+             data-name="Ikseon-dong Hanok Village and Korean BBQ">
+      </a>
 
       <!-- DÍA 2 -->
       <a href="lugares/seul/changdeokgung-palace-secret-garden-and-changgyeonggung-palace.html">
-  <img src="img/pin-lugar.png"
-       class="pin day-dorado"
-       style="top:10%; left:44%;"
-       data-day="2"
-       data-name="Changdeokgung Palace, Secret Garden and Changgyeonggung Palace">
-</a>
+        <img src="img/pin-lugar.png"
+             class="pin day-dorado"
+             style="top:10%; left:44%;"
+             data-day="2"
+             data-name="Changdeokgung Palace, Secret Garden and Changgyeonggung Palace">
+      </a>
 
       <a href="lugares/seul/cheonggyecheon.html">
-  <img src="img/pin-lugar.png"
-       class="pin day-dorado"
-       style="top:21%; left:37%;"
-       data-day="2"
-       data-name="Cheonggyecheon">
-</a>
+        <img src="img/pin-lugar.png"
+             class="pin day-dorado"
+             style="top:21%; left:37%;"
+             data-day="2"
+             data-name="Cheonggyecheon">
+      </a>
 
       <a href="lugares/seul/myeongdong.html">
-  <img src="img/pin-lugar.png"
-       class="pin day-dorado"
-       style="top:28%; left:41%;"
-       data-day="2"
-       data-name="Myeongdong">
-</a>
+        <img src="img/pin-lugar.png"
+             class="pin day-dorado"
+             style="top:28%; left:41%;"
+             data-day="2"
+             data-name="Myeongdong">
+      </a>
 
       <a href="lugares/seul/bongeusa-temple.html">
-  <img src="img/pin-lugar.png"
-       class="pin day-dorado"
-       style="top:80%; left:75%;"
-       data-day="2"
-       data-name="Bongeusa Temple">
-</a>
+        <img src="img/pin-lugar.png"
+             class="pin day-dorado"
+             style="top:80%; left:75%;"
+             data-day="2"
+             data-name="Bongeusa Temple">
+      </a>
 
       <!-- DÍA 3 -->
       <a href="lugares/seul/artist-bakery.html">
-  <img src="img/pin-lugar.png"
-       class="pin day-azul"
-       style="top:15%; left:40%;"
-       data-day="3"
-       data-name="Artist Bakery">
-</a>
+        <img src="img/pin-lugar.png"
+             class="pin day-azul"
+             style="top:15%; left:40%;"
+             data-day="3"
+             data-name="Artist Bakery">
+      </a>
 
       <a href="lugares/seul/gyeongbokgun-palace.html">
-  <img src="img/pin-lugar.png"
-       class="pin day-azul"
-       style="top:10%; left:37%;"
-       data-day="3"
-       data-name="Gyeongbokgun Palace">
-</a>
+        <img src="img/pin-lugar.png"
+             class="pin day-azul"
+             style="top:10%; left:37%;"
+             data-day="3"
+             data-name="Gyeongbokgun Palace">
+      </a>
 
       <a href="lugares/seul/namsan-park-and-seoul-tower.html">
-  <img src="img/pin-lugar.png"
-       class="pin day-azul"
-       style="top:43%; left:43%;"
-       data-day="3"
-       data-name="Namsan Park and Seoul Tower">
-</a>
+        <img src="img/pin-lugar.png"
+             class="pin day-azul"
+             style="top:43%; left:43%;"
+             data-day="3"
+             data-name="Namsan Park and Seoul Tower">
+      </a>
 
       <!-- DÍA 4 -->
       <a href="lugares/seul/lotte-world-tower.html">
-  <img src="img/pin-lugar.png"
-       class="pin day-verde"
-       style="top:84%; left:95%;"
-       data-day="4"
-       data-name="Lotte World Tower">
-</a>
+        <img src="img/pin-lugar.png"
+             class="pin day-verde"
+             style="top:84%; left:95%;"
+             data-day="4"
+             data-name="Lotte World Tower">
+      </a>
 
       <a href="lugares/seul/dongdaemun-design-plaza.html">
-  <img src="img/pin-lugar.png"
-       class="pin day-verde"
-       style="top:24%; left:53%;"
-       data-day="4"
-       data-name="Dongdaemun Design Plaza">
-</a>
+        <img src="img/pin-lugar.png"
+             class="pin day-verde"
+             style="top:24%; left:53%;"
+             data-day="4"
+             data-name="Dongdaemun Design Plaza">
+      </a>
 
       <a href="lugares/seul/hongdae.html">
-  <img src="img/pin-lugar.png"
-       class="pin day-verde"
-       style="top:35%; left:12%;"
-       data-day="4"
-       data-name="Hongdae">
-</a>
+        <img src="img/pin-lugar.png"
+             class="pin day-verde"
+             style="top:35%; left:12%;"
+             data-day="4"
+             data-name="Hongdae">
+      </a>
 
       <a href="lugares/seul/starfield-library-and-gangnam-style-sculpture.html">
-  <img src="img/pin-lugar.png"
-       class="pin day-verde"
-       style="top:84%; left:76%;"
-       data-day="4"
-       data-name="Starfield Library and Gangnam Style Sculpture">
-</a>
+        <img src="img/pin-lugar.png"
+             class="pin day-verde"
+             style="top:84%; left:76%;"
+             data-day="4"
+             data-name="Starfield Library and Gangnam Style Sculpture">
+      </a>
 
       <!-- Etiqueta flotante (una sola, reutilizable) -->
       <div id="pinLabel" class="pin-label"></div>
@@ -320,8 +363,7 @@
 
       label.textContent = name;
 
-      // Colocar la etiqueta justo encima del pin (en coords del mismo contenedor transformado)
-      // Usamos offsetLeft/Top porque label y pin comparten el mismo padre (.mapa-inner)
+      // label y pin comparten el mismo padre (.mapa-inner)
       const x = el.offsetLeft;
       const y = el.offsetTop;
 
@@ -333,24 +375,12 @@
       showPinLabelFor._t = setTimeout(() => label.classList.remove('show'), 2000);
     }
 
-    function openPin(el, url, target) {
-      const day = el.dataset.day ?? '';
-      const name = el.dataset.name ?? '';
-      showTip(`Día ${day} – ${name}`);
-
-      document.querySelectorAll('.pin').forEach(p => p.classList.remove('activo'));
-      el.classList.add('activo');
-
-      showPinLabelFor(el);
-      window.open(url, target || '_blank');
-    }
-
     // Mostrar etiqueta también al hover en escritorio
     document.querySelectorAll('.pin').forEach(pin => {
       pin.addEventListener('mouseenter', () => showPinLabelFor(pin));
     });
 
-    // ===== Motor pan + zoom (el bueno) =====
+    // ===== Motor pan + zoom =====
     let scale = 1;
     let tx = 0;
     let ty = 0;
@@ -363,11 +393,13 @@
 
     function clamp(v, min, max) { return Math.min(Math.max(v, min), max); }
     function aplicarTransform() { mapaInner.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`; }
+
     function getPointInViewport(clientX, clientY) {
       const rect = mapa.getBoundingClientRect();
       return { x: clientX - rect.left, y: clientY - rect.top };
     }
 
+    // ✅ CLAVE: si el contenido es menor que el viewport, lo centramos (evita mapa arriba + negro abajo)
     function clampPan() {
       const viewportW = mapa.clientWidth;
       const viewportH = mapa.clientHeight;
@@ -378,15 +410,17 @@
       const contentW = baseW * scale;
       const contentH = baseH * scale;
 
-      const margin = 0;
+      if (contentW <= viewportW) {
+        tx = (viewportW - contentW) / 2;
+      } else {
+        tx = clamp(tx, viewportW - contentW, 0);
+      }
 
-      const minTx = Math.min(margin, viewportW - contentW - margin);
-      const maxTx = Math.max(-margin, 0 + margin);
-      tx = clamp(tx, minTx, maxTx);
-
-      const minTy = Math.min(margin, viewportH - contentH - margin);
-      const maxTy = Math.max(-margin, 0 + margin);
-      ty = clamp(ty, minTy, maxTy);
+      if (contentH <= viewportH) {
+        ty = (viewportH - contentH) / 2;
+      } else {
+        ty = clamp(ty, viewportH - contentH, 0);
+      }
     }
 
     function zoomAt(clientX, clientY, newScale) {
@@ -425,7 +459,7 @@
 
     window.addEventListener("mouseup", () => { isDraggingMouse = false; });
 
-    // Trackpad/rue­da: PAN por defecto, ZOOM si ctrlKey
+    // Trackpad/rueda: PAN por defecto, ZOOM si ctrlKey
     mapa.addEventListener("wheel", (e) => {
       e.preventDefault();
       if (e.ctrlKey) {

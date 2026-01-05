@@ -39,23 +39,55 @@
       pointer-events: none;
     }
 
+    /* ===== PIN ===== */
     .pin {
       position: absolute;
-      width: 70px;
+      width: 70px;            /* desktop */
+      height: auto;
       z-index: 10;
       cursor: pointer;
       transform: translate(-50%, -100%);
       transition: transform 0.2s ease, filter 0.2s ease;
       user-select: none;
       -webkit-user-drag: none;
-      touch-action: none;
+      touch-action: manipulation; /* mejor que none para taps */
     }
 
-    .pin:hover,
-    .pin.activo {
-      transform: translate(-50%, -100%) scale(1.12);
-      filter: drop-shadow(0 0 10px rgba(255,255,255,0.9));
-      z-index: 20;
+    /* Hover solo donde existe hover real */
+    @media (hover: hover) {
+      .pin:hover,
+      .pin.activo {
+        transform: translate(-50%, -100%) scale(1.12);
+        filter: drop-shadow(0 0 10px rgba(255,255,255,0.9));
+        z-index: 20;
+      }
+    }
+
+    /* En táctil, evita “hover” fantasma; deja activo solo por clase */
+    @media (hover: none) {
+      .pin.activo {
+        transform: translate(-50%, -100%) scale(1.08);
+        filter: drop-shadow(0 0 10px rgba(255,255,255,0.85));
+        z-index: 20;
+      }
+    }
+
+    /* Móvil: icono más pequeño */
+    @media (max-width: 768px) {
+      .pin { width: 42px; }
+    }
+
+    /* Aumenta el área táctil SIN cambiar el icono */
+    @media (hover: none) {
+      .pin::before {
+        content: "";
+        position: absolute;
+        left: -18px;
+        top: -18px;
+        width: calc(100% + 36px);
+        height: calc(100% + 36px);
+        background: transparent;
+      }
     }
 
     /* ===== POLAROID ===== */
@@ -82,6 +114,7 @@
 
     .polaroid.visible {
       opacity: 1;
+      pointer-events: auto; /* ahora es clicable en móvil */
     }
 
     .polaroid img {
@@ -94,6 +127,8 @@
       backface-visibility: hidden;
       transform: translateZ(0);
       image-rendering: auto;
+
+      pointer-events: none; /* evita que la imagen “robe” el toque */
     }
 
     .polaroid .caption {
@@ -233,6 +268,9 @@
       polaroidCap.textContent = pin.dataset.title || "";
       positionPolaroid(pin);
 
+      // Guarda el link para que la polaroid también navegue en móvil
+      polaroid.dataset.link = pin.dataset.link;
+
       polaroid.classList.add("visible");
       pin.classList.add("activo");
 
@@ -245,6 +283,7 @@
       if (activePin) activePin.classList.remove("activo");
       activePin = null;
       lastTouchPin = null;
+      delete polaroid.dataset.link;
     }
 
     function rerasterizePolaroid() {
@@ -253,6 +292,16 @@
       void polaroid.offsetHeight;
       polaroid.style.display = "";
     }
+
+    // En móvil: tocar la polaroid abre la ciudad (evita tener que “re-acertar” el pin)
+    polaroid.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isTouch = matchMedia("(hover: none)").matches;
+      if (!isTouch) return;
+      if (polaroid.classList.contains("visible") && polaroid.dataset.link) {
+        location.href = polaroid.dataset.link;
+      }
+    });
 
     pins.forEach(pin => {
       pin.addEventListener("mouseenter", () => showPolaroid(pin));
@@ -279,8 +328,11 @@
       });
     });
 
+    // Cerrar polaroid al tocar el fondo (pero no al tocar polaroid/pin)
     mapa.addEventListener("click", e => {
-      if (!e.target.classList.contains("pin")) hidePolaroid();
+      if (e.target.classList && e.target.classList.contains("pin")) return;
+      if (e.target.closest && e.target.closest("#polaroid")) return;
+      hidePolaroid();
     });
 
     /* PAN ratón */

@@ -35,6 +35,7 @@
       inset: 0;
       background: rgba(0,0,0,0.32);
       z-index: 1;
+      pointer-events: none;
     }
 
     .back{
@@ -80,12 +81,17 @@
       cursor: pointer;
       position: relative;
       user-select: none;
-      transform: rotate(var(--r, 0deg));
+      -webkit-tap-highlight-color: transparent;
+
+      transform: translateY(var(--lift,0)) rotate(var(--r, 0deg));
       transition: transform .16s ease, box-shadow .16s ease;
+      will-change: transform;
     }
 
     .polaroid:hover{
-      transform: rotate(var(--r,0deg)) scale(1.03);
+      transform: translateY(calc(var(--lift,0) - 2px))
+                 rotate(var(--r,0deg))
+                 scale(1.03);
       box-shadow: 0 24px 48px rgba(0,0,0,0.6);
       z-index: 20;
     }
@@ -103,6 +109,7 @@
       box-shadow: 0 3px 10px rgba(0,0,0,0.35);
     }
 
+    /* 🔑 Foto des-rotada para evitar blur */
     .photo{
       margin-top: 12px;
       width: 100%;
@@ -110,6 +117,8 @@
       border-radius: 10px;
       overflow: hidden;
       background:#eee;
+      transform: rotate(calc(var(--r,0deg) * -1));
+      transform-origin: center;
     }
 
     .photo img{
@@ -119,9 +128,9 @@
       display:block;
     }
 
-    /* Rotaciones suaves */
-    .p1{ --r:-2deg; }
-    .p2{ --r: 2deg; }
+    /* Rotaciones + micro lift (2) */
+    .p1{ --r:-2deg; --lift: 8px; }
+    .p2{ --r: 2deg; --lift:-6px; }
 
     /* Modal */
     .modal{
@@ -133,6 +142,7 @@
       justify-content: center;
       z-index: 50;
       padding: 18px;
+      box-sizing: border-box;
     }
     .modal.open{ display:flex; }
     .modal img{
@@ -152,7 +162,8 @@
         grid-template-columns: 1fr;
         row-gap: 34px;
       }
-      .polaroid{ transform:none; }
+      .polaroid{ --lift:0; --r:0deg; }
+      .photo{ transform:none; }
     }
   </style>
 </head>
@@ -165,15 +176,15 @@
 
   <main class="board">
     <div class="row">
-      <div class="polaroid p1">
+      <div class="polaroid p1" data-src="../../img/seul/myeongdong/01.webp">
         <div class="photo">
-          <img src="../../img/seul/myeongdong/01.webp" alt="Myeongdong">
+          <img src="../../img/seul/myeongdong/01.webp" alt="Myeongdong 01">
         </div>
       </div>
 
-      <div class="polaroid p2">
+      <div class="polaroid p2" data-src="../../img/seul/myeongdong/02.jpg">
         <div class="photo">
-          <img src="../../img/seul/myeongdong/02.jpg" alt="Myeongdong">
+          <img src="../../img/seul/myeongdong/02.jpg" alt="Myeongdong 02">
         </div>
       </div>
     </div>
@@ -188,23 +199,25 @@
     const modal = document.getElementById("modal");
     const modalImg = document.getElementById("modalImg");
 
-    document.querySelectorAll(".polaroid").forEach(p => {
-      p.addEventListener("click", () => {
-        modalImg.src = p.querySelector("img").src;
-        modal.classList.add("open");
+    function openModal(src){
+      modalImg.src = src;
+      modal.classList.add("open");
+    }
+    function closeModal(){
+      modal.classList.remove("open");
+      modalImg.src = "";
+    }
+
+    document.querySelectorAll(".polaroid").forEach(card => {
+      card.addEventListener("click", () => {
+        openModal(card.dataset.src || card.querySelector("img")?.src);
       });
     });
 
-    modal.addEventListener("click", () => {
-      modal.classList.remove("open");
-      modalImg.src = "";
-    });
+    modal.addEventListener("click", closeModal);
 
     window.addEventListener("keydown", e => {
-      if (e.key === "Escape") {
-        modal.classList.remove("open");
-        modalImg.src = "";
-      }
+      if (e.key === "Escape") closeModal();
     });
   </script>
 </body>

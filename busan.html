@@ -15,27 +15,28 @@
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     }
 
-    /* Botón volver (tamaño medio) */
+    /* Botón volver (desktop) */
     .back {
       position: fixed;
       top: 12px;
       left: 12px;
       background: rgba(255,255,255,0.95);
-      padding: 14px 18px;
-      border-radius: 12px;
+      padding: 12px 14px;
+      border-radius: 14px;
       cursor: pointer;
-      font-size: 18px;
-      font-weight: 600;
+      font-size: 16px;
+      font-weight: 700;
       user-select: none;
       z-index: 9999;
       transform: translateZ(0);
+      line-height: 1;
     }
 
     /* Tooltip superior */
     .tooltip {
       position: fixed;
       left: 12px;
-      top: 58px;
+      top: 54px;
       z-index: 9999;
       background: rgba(0,0,0,0.72);
       color: rgba(255,255,255,0.97);
@@ -55,6 +56,7 @@
       height: 100vh;
       overflow: hidden;
       touch-action: none;
+      background: #000;
     }
 
     /* Capa transformable (mapa + pins) */
@@ -81,7 +83,7 @@
     /* Pins */
     .pin {
       position: absolute;
-      width: 45px; /* ⬅️ tamaño intermedio para Busan */
+      width: 45px; /* desktop “intermedio” */
       height: auto;
       z-index: 10;
       cursor: pointer;
@@ -89,34 +91,58 @@
       -webkit-tap-highlight-color: transparent;
       user-select: none;
       -webkit-user-drag: none;
-      touch-action: none;
+      touch-action: manipulation;
       backface-visibility: hidden;
       will-change: transform, filter;
       transition: transform 0.15s ease;
     }
 
-    .pin:hover,
-    .pin.activo {
-      transform: translate(-50%, -50%) scale(1.08) translateZ(0);
-      z-index: 20;
+    /* Hover solo donde existe hover real */
+    @media (hover: hover) {
+      .pin:hover,
+      .pin.activo {
+        transform: translate(-50%, -50%) scale(1.08) translateZ(0);
+        z-index: 20;
+      }
     }
 
-    /* Filtros por día (ajustados como Seúl) */
+    /* En táctil, evita hover fantasma; “activo” más suave */
+    @media (hover: none) {
+      .pin.activo {
+        transform: translate(-50%, -50%) scale(1.05) translateZ(0);
+        z-index: 20;
+      }
+    }
+
+    /* Móvil: pin más pequeño */
+    @media (max-width: 768px) {
+      .pin { width: 34px; }
+    }
+
+    /* Móvil: área táctil más grande SIN agrandar el icono */
+    @media (hover: none) {
+      .pin {
+        padding: 14px;
+        margin: -14px;
+      }
+    }
+
+    /* Filtros por día */
     .day-granate { filter: hue-rotate(350deg) saturate(95%) brightness(95%); }
     .day-dorado  { filter: hue-rotate(50deg)  saturate(110%) brightness(108%); }
     .day-azul    { filter: hue-rotate(200deg) saturate(95%) brightness(95%); }
     .day-verde   { filter: hue-rotate(110deg) saturate(95%) brightness(95%); }
 
-    /* Leyenda (tamaño medio) */
+    /* Leyenda */
     .legend {
       position: fixed;
       bottom: 12px;
       left: 12px;
       background: rgba(0,0,0,0.60);
       color: rgba(255,255,255,0.95);
-      padding: 12px 16px;
+      padding: 12px 14px;
       border-radius: 14px;
-      font-size: 16px;
+      font-size: 14px;
       display: flex;
       gap: 12px;
       align-items: center;
@@ -128,9 +154,8 @@
     }
 
     .key { display: inline-flex; gap: 8px; align-items: center; white-space: nowrap; }
-    .dot { width: 12px; height: 12px; border-radius: 999px; display: inline-block; }
+    .dot { width: 10px; height: 10px; border-radius: 999px; display: inline-block; }
 
-    /* Colores leyenda (ajustados) */
     .c-granate { background: #8b1d2c; } /* Día 7 */
     .c-dorado  { background: #e0b83f; } /* Día 8 */
     .c-azul    { background: #1f6fa6; } /* Día 9 */
@@ -142,8 +167,8 @@
       z-index: 99999;
       background: rgba(0,0,0,0.78);
       color: #fff;
-      padding: 7px 10px;
-      border-radius: 10px;
+      padding: 10px 12px;
+      border-radius: 14px;
       font-size: 14px;
       font-weight: 500;
       white-space: nowrap;
@@ -155,6 +180,25 @@
     .pin-label.show {
       opacity: 1;
       transform: translate(-50%, -14px);
+    }
+
+    /* Ajustes UI en móvil */
+    @media (max-width: 768px) {
+      .back {
+        padding: 10px 12px;
+        border-radius: 12px;
+        font-size: 14px;
+      }
+      .tooltip {
+        top: 50px;
+        font-size: 13px;
+      }
+      .legend {
+        font-size: 13px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        gap: 10px;
+      }
     }
   </style>
 </head>
@@ -169,95 +213,95 @@
 
       <!-- ===================== DÍA 7 (granate) ===================== -->
       <a href="lugares/busan/gukje-and-bupyeong-markets.html">
-  <img src="img/pin-lugar.png"
-       class="pin day-granate"
-       style="top:61.5%; left:44.5%;"
-       data-day="7"
-       data-name="Gukje and Bupyeong Markets">
-</a>
+        <img src="img/pin-lugar.png"
+             class="pin day-granate"
+             style="top:61.5%; left:44.5%;"
+             data-day="7"
+             data-name="Gukje and Bupyeong Markets">
+      </a>
 
       <a href="lugares/busan/biff-square-and-jajangmyeon.html">
-  <img src="img/pin-lugar.png"
-       class="pin day-granate"
-       style="top:64.5%; left:45%;"
-       data-day="7"
-       data-name="BIFF Square and Jajangmyeon">
-</a>
+        <img src="img/pin-lugar.png"
+             class="pin day-granate"
+             style="top:64.5%; left:45%;"
+             data-day="7"
+             data-name="BIFF Square and Jajangmyeon">
+      </a>
 
       <!-- ===================== DÍA 8 (dorado) ===================== -->
       <a href="lugares/busan/beomeosa-temple.html">
-  <img src="img/pin-lugar.png"
-       class="pin day-dorado"
-       style="top:4%; left:65%;"
-       data-day="8"
-       data-name="Beomeosa Temple">
-</a>
+        <img src="img/pin-lugar.png"
+             class="pin day-dorado"
+             style="top:4%; left:65%;"
+             data-day="8"
+             data-name="Beomeosa Temple">
+      </a>
 
       <a href="lugares/busan/jagalchi-market.html">
-  <img src="img/pin-lugar.png"
-       class="pin day-dorado"
-       style="top:66%; left:46.5%;"
-       data-day="8"
-       data-name="Jagalchi Market">
-</a>
+        <img src="img/pin-lugar.png"
+             class="pin day-dorado"
+             style="top:66%; left:46.5%;"
+             data-day="8"
+             data-name="Jagalchi Market">
+      </a>
 
       <a href="lugares/busan/gamcheon-culture-village.html">
-  <img src="img/pin-lugar.png"
-       class="pin day-dorado"
-       style="top:64%; left:38%;"
-       data-day="8"
-       data-name="Gamcheon Culture Village">
-</a>
+        <img src="img/pin-lugar.png"
+             class="pin day-dorado"
+             style="top:64%; left:38%;"
+             data-day="8"
+             data-name="Gamcheon Culture Village">
+      </a>
 
       <a href="lugares/busan/songdo-beach.html">
-  <img src="img/pin-lugar.png"
-       class="pin day-dorado"
-       style="top:75.5%; left:41%;"
-       data-day="8"
-       data-name="Songdo Beach">
-</a>
+        <img src="img/pin-lugar.png"
+             class="pin day-dorado"
+             style="top:75.5%; left:41%;"
+             data-day="8"
+             data-name="Songdo Beach">
+      </a>
 
       <!-- ===================== DÍA 9 (azul) ===================== -->
       <a href="lugares/busan/haedong-yonggungsa-temple.html">
-  <img src="img/pin-lugar.png"
-       class="pin day-azul"
-       style="top:33%; left:90%;"
-       data-day="9"
-       data-name="Haedong Yonggungsa Temple">
-</a>
+        <img src="img/pin-lugar.png"
+             class="pin day-azul"
+             style="top:33%; left:90%;"
+             data-day="9"
+             data-name="Haedong Yonggungsa Temple">
+      </a>
 
       <a href="lugares/busan/haeundae-beach-busan-x-the-sky-and-sky-capsule.html">
-  <img src="img/pin-lugar.png"
-       class="pin day-azul"
-       style="top:45%; left:81%;"
-       data-day="9"
-       data-name="Haeundae Beach, BUSAN X the SKY and Sky Capsule">
-</a>
+        <img src="img/pin-lugar.png"
+             class="pin day-azul"
+             style="top:45%; left:81%;"
+             data-day="9"
+             data-name="Haeundae Beach, BUSAN X the SKY and Sky Capsule">
+      </a>
 
       <a href="lugares/busan/dongbaekseom.html">
-  <img src="img/pin-lugar.png"
-       class="pin day-azul"
-       style="top:48%; left:77%;"
-       data-day="9"
-       data-name="Dongbaekseom">
-</a>
+        <img src="img/pin-lugar.png"
+             class="pin day-azul"
+             style="top:48%; left:77%;"
+             data-day="9"
+             data-name="Dongbaekseom">
+      </a>
 
       <!-- ===================== DÍA 10 (verde) ===================== -->
       <a href="lugares/busan/oryukdo-skywalk-and-igidae-coastal-trail.html">
-  <img src="img/pin-lugar.png"
-       class="pin day-verde"
-       style="top:69%; left:71%;"
-       data-day="10"
-       data-name="Oryukdo Skywalk and Igidae Coastal Trail">
-</a>
+        <img src="img/pin-lugar.png"
+             class="pin day-verde"
+             style="top:69%; left:71%;"
+             data-day="10"
+             data-name="Oryukdo Skywalk and Igidae Coastal Trail">
+      </a>
 
       <a href="lugares/busan/donkatsu.html">
-  <img src="img/pin-lugar.png"
-       class="pin day-verde"
-       style="top:62%; left:46%;"
-       data-day="10"
-       data-name="Donkatsu">
-</a>
+        <img src="img/pin-lugar.png"
+             class="pin day-verde"
+             style="top:62%; left:46%;"
+             data-day="10"
+             data-name="Donkatsu">
+      </a>
 
       <!-- Etiqueta flotante reutilizable -->
       <div id="pinLabel" class="pin-label"></div>
@@ -297,24 +341,12 @@
       showPinLabelFor._t = setTimeout(() => label.classList.remove('show'), 1800);
     }
 
-    function openPin(el, url, target) {
-      const day = el.dataset.day ?? '';
-      const name = el.dataset.name ?? '';
-      showTip(`Día ${day} – ${name}`);
-
-      document.querySelectorAll('.pin').forEach(p => p.classList.remove('activo'));
-      el.classList.add('activo');
-
-      showPinLabelFor(el);
-      window.open(url, target || '_blank');
-    }
-
     // Hover en escritorio
     document.querySelectorAll('.pin').forEach(pin => {
       pin.addEventListener('mouseenter', () => showPinLabelFor(pin));
     });
 
-    // ===== Motor pan + zoom (igual que Seúl/Gyeongju) =====
+    // ===== Motor pan + zoom =====
     let scale = 1;
     let tx = 0;
     let ty = 0;
@@ -327,11 +359,13 @@
 
     function clamp(v, min, max) { return Math.min(Math.max(v, min), max); }
     function aplicarTransform() { mapaInner.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`; }
+
     function getPointInViewport(clientX, clientY) {
       const rect = mapa.getBoundingClientRect();
       return { x: clientX - rect.left, y: clientY - rect.top };
     }
 
+    // ✅ CLAVE: centrar si el contenido es menor que el viewport
     function clampPan() {
       const viewportW = mapa.clientWidth;
       const viewportH = mapa.clientHeight;
@@ -342,15 +376,17 @@
       const contentW = baseW * scale;
       const contentH = baseH * scale;
 
-      const margin = 0;
+      if (contentW <= viewportW) {
+        tx = (viewportW - contentW) / 2;
+      } else {
+        tx = clamp(tx, viewportW - contentW, 0);
+      }
 
-      const minTx = Math.min(margin, viewportW - contentW - margin);
-      const maxTx = Math.max(-margin, 0 + margin);
-      tx = clamp(tx, minTx, maxTx);
-
-      const minTy = Math.min(margin, viewportH - contentH - margin);
-      const maxTy = Math.max(-margin, 0 + margin);
-      ty = clamp(ty, minTy, maxTy);
+      if (contentH <= viewportH) {
+        ty = (viewportH - contentH) / 2;
+      } else {
+        ty = clamp(ty, viewportH - contentH, 0);
+      }
     }
 
     function zoomAt(clientX, clientY, newScale) {
@@ -389,7 +425,7 @@
 
     window.addEventListener("mouseup", () => { isDraggingMouse = false; });
 
-    // Trackpad/rue­da: PAN por defecto, ZOOM si ctrlKey
+    // Trackpad/rueda: PAN por defecto, ZOOM si ctrlKey
     mapa.addEventListener("wheel", (e) => {
       e.preventDefault();
       if (e.ctrlKey) {

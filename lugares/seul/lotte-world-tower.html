@@ -38,6 +38,7 @@
         rgba(0,0,0,0.65)
       );
       z-index: 1;
+      pointer-events: none;
     }
 
     .back{
@@ -64,7 +65,7 @@
       box-sizing: border-box;
     }
 
-    /* ===== Fila única ===== */
+    /* Fila única */
     .row{
       display: grid;
       grid-template-columns: repeat(4, var(--polaroid-w));
@@ -83,8 +84,11 @@
       cursor: pointer;
       position: relative;
       user-select: none;
+      -webkit-tap-highlight-color: transparent;
+
       transform: translateY(var(--lift,0)) rotate(var(--r,0deg));
       transition: transform .16s ease, box-shadow .16s ease;
+      will-change: transform;
     }
 
     .polaroid:hover{
@@ -108,6 +112,7 @@
       box-shadow: 0 3px 10px rgba(0,0,0,0.35);
     }
 
+    /* 🔑 Foto des-rotada para que no se vea borrosa */
     .photo{
       margin-top: 10px;
       width: 100%;
@@ -116,6 +121,7 @@
       overflow: hidden;
       background:#eee;
       transform: rotate(calc(var(--r,0deg) * -1));
+      transform-origin: center;
     }
 
     .photo img{
@@ -141,16 +147,15 @@
       justify-content: center;
       z-index: 50;
       padding: 18px;
-      isolation: isolate;
+      box-sizing: border-box;
     }
     .modal.open{ display:flex; }
+
     .modal img{
       max-width: 96vw;
       max-height: 92vh;
       object-fit: contain;
       border-radius: 14px;
-      filter: none !important;
-      mix-blend-mode: normal !important;
     }
 
     /* Responsive */
@@ -164,6 +169,8 @@
         grid-template-columns: repeat(2, var(--polaroid-w));
         row-gap: 32px;
       }
+      .polaroid{ --lift:0; --r:0deg; }
+      .photo{ transform:none; }
     }
 
     @media (max-width: 600px){
@@ -185,38 +192,40 @@
 
   <main class="board">
     <div class="row">
-      <div class="polaroid p1"><div class="photo"><img src="../../img/seul/lotte-world-tower/01.bmp"></div></div>
-      <div class="polaroid p2"><div class="photo"><img src="../../img/seul/lotte-world-tower/02.jpg"></div></div>
-      <div class="polaroid p3"><div class="photo"><img src="../../img/seul/lotte-world-tower/03.jpg"></div></div>
-      <div class="polaroid p4"><div class="photo"><img src="../../img/seul/lotte-world-tower/04.jpg"></div></div>
+      <div class="polaroid p1" data-src="../../img/seul/lotte-world-tower/01.bmp"><div class="photo"><img src="../../img/seul/lotte-world-tower/01.bmp" alt=""></div></div>
+      <div class="polaroid p2" data-src="../../img/seul/lotte-world-tower/02.jpg"><div class="photo"><img src="../../img/seul/lotte-world-tower/02.jpg" alt=""></div></div>
+      <div class="polaroid p3" data-src="../../img/seul/lotte-world-tower/03.jpg"><div class="photo"><img src="../../img/seul/lotte-world-tower/03.jpg" alt=""></div></div>
+      <div class="polaroid p4" data-src="../../img/seul/lotte-world-tower/04.jpg"><div class="photo"><img src="../../img/seul/lotte-world-tower/04.jpg" alt=""></div></div>
     </div>
   </main>
 
   <div class="modal" id="modal">
-    <img id="modalImg">
+    <img id="modalImg" alt="">
   </div>
 
   <script>
     const modal = document.getElementById("modal");
     const modalImg = document.getElementById("modalImg");
 
-    document.querySelectorAll(".polaroid").forEach(p => {
-      p.addEventListener("click", () => {
-        modalImg.src = p.querySelector("img").src;
-        modal.classList.add("open");
+    function openModal(src){
+      modalImg.src = src;
+      modal.classList.add("open");
+    }
+    function closeModal(){
+      modal.classList.remove("open");
+      modalImg.src = "";
+    }
+
+    document.querySelectorAll(".polaroid").forEach(card => {
+      card.addEventListener("click", () => {
+        openModal(card.dataset.src || card.querySelector("img")?.src);
       });
     });
 
-    modal.addEventListener("click", () => {
-      modal.classList.remove("open");
-      modalImg.src = "";
-    });
+    modal.addEventListener("click", closeModal);
 
     window.addEventListener("keydown", e => {
-      if (e.key === "Escape") {
-        modal.classList.remove("open");
-        modalImg.src = "";
-      }
+      if (e.key === "Escape") closeModal();
     });
   </script>
 </body>
