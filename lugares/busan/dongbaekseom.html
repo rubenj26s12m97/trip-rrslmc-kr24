@@ -19,38 +19,15 @@
       height: 100%;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background: #000;
-
-      /* ✅ permitir scroll si hace falta */
-      overflow-x: hidden;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
+      overflow: hidden; /* el scroll lo hace .viewport */
     }
 
-    /* Fondo */
-    .bg{
-      position: fixed;
-      inset: 0;
-      background: url("../../img/busan/dongbaekseom/01.jpg") center 45% / cover no-repeat;
-      z-index: 0;
-    }
-
-    .shade{
-      position: fixed;
-      inset: 0;
-      background: radial-gradient(
-        ellipse at center,
-        rgba(0,0,0,0.12),
-        rgba(0,0,0,0.55)
-      );
-      z-index: 1;
-      pointer-events: none;
-    }
-
+    /* Botón volver */
     .back{
       position: fixed;
       top: 14px;
       left: 14px;
-      z-index: 10;
+      z-index: 20;
       background: rgba(255,255,255,0.92);
       color: #000;
       text-decoration: none;
@@ -58,27 +35,45 @@
       border-radius: 12px;
       font-size: 14px;
       box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+      -webkit-tap-highlight-color: transparent;
     }
 
-    /* ✅ ya no fixed: permite scroll */
-    .board{
+    /* Scroll 2D nativo */
+    .viewport{
+      position: fixed;
+      inset: 0;
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      background: #000;
+    }
+
+    /* Mundo más grande que la pantalla */
+    .stage{
       position: relative;
-      z-index: 5;
-      min-height: 100vh;
-      display: grid;
-      place-items: start center;
-      padding: 95px 18px 60px;
-      box-sizing: border-box;
+      width: 1400px;
+      height: 900px;
+
+      background:
+        radial-gradient(
+          ellipse at center,
+          rgba(0,0,0,0.12),
+          rgba(0,0,0,0.55)
+        ),
+        url("../../img/busan/dongbaekseom/01.jpg") center 45% / cover no-repeat;
     }
 
-    /* ✅ “pista” que puede hacer scroll horizontal en móvil si no cabe */
+    /* Layout 1 arriba + 2 abajo, pero en el “mundo” */
     .layout{
+      position: absolute;
+      top: 150px;
+      left: 200px;
+
       display: grid;
       grid-template-rows: auto auto;
       row-gap: var(--gap-y);
       justify-items: center;
-
-      max-width: 100%;
+      width: max-content;
     }
 
     .row.top{
@@ -104,6 +99,8 @@
       cursor: pointer;
       position: relative;
       user-select: none;
+      -webkit-tap-highlight-color: transparent;
+
       transform: translateY(var(--lift,0)) rotate(var(--r,0deg));
       transition: transform .16s ease, box-shadow .16s ease;
     }
@@ -146,6 +143,9 @@
       height: 100%;
       object-fit: cover;
       display:block;
+      user-select: none;
+      -webkit-user-drag: none;
+      pointer-events: none;
     }
 
     /* Offsets */
@@ -172,70 +172,60 @@
       border-radius: 14px;
     }
 
-    /* ✅ móvil: mantener el layout (1 arriba + 2 abajo) y permitir scroll horizontal del conjunto */
-    @media (max-width: 980px){
+    /* Móvil: stage algo más compacto, polaroids algo más pequeñas */
+    @media (max-width: 768px){
       :root{
         --polaroid-w: 200px;
         --photo-h: 145px;
-        --gap-x: 22px;
+        --gap-x: 30px;
         --gap-y: 34px;
       }
-
-      /* si el bloque completo no cabe, scroll horizontal */
+      .stage{
+        width: 1200px;
+        height: 900px;
+      }
       .layout{
-        overflow-x: auto;
-        overflow-y: visible;
-        -webkit-overflow-scrolling: touch;
-        padding: 0 10px 10px;
-        max-width: 100%;
-        scroll-snap-type: x proximity;
+        top: 140px;
+        left: 120px;
       }
-
-      /* el contenido “real” debe poder ser más ancho que la pantalla */
-      .row.bottom{
-        grid-template-columns: repeat(2, var(--polaroid-w));
-        column-gap: var(--gap-x);
-      }
-
-      .polaroid{ --lift:0; scroll-snap-align: center; }
-      .photo{ transform:none; }
+      .photo{ transform: none; }
+      .polaroid{ --lift: 0; }
     }
   </style>
 </head>
 
 <body>
-  <div class="bg"></div>
-  <div class="shade"></div>
-
   <a class="back" href="../../busan.html">← Volver a Busan</a>
 
-  <main class="board">
-    <section class="layout">
+  <div class="viewport" id="viewport">
+    <div class="stage" id="stage">
+      <section class="layout">
 
-      <div class="row top">
-        <div class="polaroid p1">
-          <div class="photo">
-            <img src="../../img/busan/dongbaekseom/01.jpg" alt="">
-          </div>
-        </div>
-      </div>
-
-      <div class="row bottom">
-        <div class="polaroid p2">
-          <div class="photo">
-            <img src="../../img/busan/dongbaekseom/02.jpg" alt="">
+        <div class="row top">
+          <div class="polaroid p1">
+            <div class="photo">
+              <img src="../../img/busan/dongbaekseom/01.jpg" alt="">
+            </div>
           </div>
         </div>
 
-        <div class="polaroid p3">
-          <div class="photo">
-            <img src="../../img/busan/dongbaekseom/03.jpg" alt="">
+        <div class="row bottom">
+          <div class="polaroid p2">
+            <div class="photo">
+              <img src="../../img/busan/dongbaekseom/02.jpg" alt="">
+            </div>
+          </div>
+
+          <div class="polaroid p3">
+            <div class="photo">
+              <img src="../../img/busan/dongbaekseom/03.jpg" alt="">
+            </div>
           </div>
         </div>
-      </div>
 
-    </section>
-  </main>
+      </section>
+    </div>
+  </div>
 
   <!-- Modal -->
   <div class="modal" id="modal">
@@ -254,16 +244,23 @@
       });
     });
 
-    modal.addEventListener("click", () => {
+    function closeModal(){
       modal.classList.remove("open");
       modalImg.src = "";
-    });
+    }
+
+    modal.addEventListener("click", closeModal);
 
     window.addEventListener("keydown", e => {
-      if (e.key === "Escape") {
-        modal.classList.remove("open");
-        modalImg.src = "";
-      }
+      if (e.key === "Escape") closeModal();
+    });
+
+    // Centrado inicial suave hacia la zona de polaroids
+    window.addEventListener("load", () => {
+      const vp = document.getElementById("viewport");
+      const stage = document.getElementById("stage");
+      vp.scrollLeft = Math.max(0, (stage.offsetWidth  - vp.clientWidth)  * 0.30);
+      vp.scrollTop  = Math.max(0, (stage.offsetHeight - vp.clientHeight) * 0.14);
     });
   </script>
 </body>
