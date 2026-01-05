@@ -7,6 +7,12 @@
   <meta name="robots" content="noindex, nofollow">
 
   <style>
+    :root{
+      /* ✅ (2) Pines más grandes para Busan */
+      --pin-w-desktop: 56px;
+      --pin-w-mobile: 42px;
+    }
+
     html, body {
       height: 100%;
       margin: 0;
@@ -51,7 +57,7 @@
     .mapa {
       position: relative;
       width: 100vw;
-      height: 100dvh;              /* ✅ */
+      height: 100vh;
       overflow: hidden;
       touch-action: none;
       background: #000;
@@ -80,7 +86,7 @@
 
     .pin {
       position: absolute;
-      width: 46px;                 /* ✅ un poco más grande en desktop */
+      width: var(--pin-w-desktop);
       height: auto;
       z-index: 10;
       cursor: pointer;
@@ -109,19 +115,8 @@
       }
     }
 
-    /* ✅ móvil: pins más grandes (antes 30px) */
     @media (max-width: 768px) {
-      .pin { width: 40px; }
-    }
-
-    /* ✅ área táctil grande SIN mover el centro */
-    @media (hover: none) {
-      .pin::before {
-        content: "";
-        position: absolute;
-        inset: -14px;
-        background: transparent;
-      }
+      .pin { width: var(--pin-w-mobile); }
     }
 
     .day-granate { filter: hue-rotate(350deg) saturate(95%) brightness(95%); }
@@ -131,8 +126,8 @@
 
     .legend {
       position: fixed;
-      bottom: 12px;
       left: 12px;
+      bottom: calc(12px + env(safe-area-inset-bottom));
       background: rgba(0,0,0,0.60);
       color: rgba(255,255,255,0.95);
       padding: 12px 14px;
@@ -156,55 +151,43 @@
     .c-azul    { background: #1f6fa6; }
     .c-verde   { background: #2f8f4e; }
 
-    /* ✅ En móvil, leyenda arriba-dcha para no tapar pines de abajo */
+    .pin-label {
+      position: absolute;
+      z-index: 99999;
+      background: rgba(0,0,0,0.82);
+      color: #fff;
+      padding: 10px 12px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 650;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transform: translate(-50%, -18px);
+      transition: opacity 0.12s ease, transform 0.12s ease;
+    }
+    .pin-label.show {
+      opacity: 1;
+      transform: translate(-50%, -22px);
+    }
+
     @media (max-width: 768px) {
-      .legend{
-        top: 12px;
-        bottom: auto;
-        left: auto;
-        right: 12px;
-        margin-left: 70px;
-        font-size: 13px;
-        padding: 10px 12px;
-        border-radius: 12px;
-        gap: 10px;
-      }
       .back {
         padding: 10px 12px;
         border-radius: 12px;
         font-size: 14px;
       }
-      .tooltip {
-        top: 50px;
+      .tooltip { top: 50px; font-size: 13px; }
+      .legend {
         font-size: 13px;
-      }
-    }
-
-    .pin-label {
-      position: absolute;
-      z-index: 99999;
-      background: rgba(0,0,0,0.78);
-      color: #fff;
-      padding: 10px 12px;
-      border-radius: 14px;
-      font-size: 14px;
-      font-weight: 500;
-      white-space: nowrap;
-      pointer-events: none;
-      opacity: 0;
-      transform: translate(-50%, -14px);
-      transition: opacity 0.12s ease, transform 0.12s ease;
-    }
-    .pin-label.show {
-      opacity: 1;
-      transform: translate(-50%, -18px);
-    }
-
-    @media (max-width: 768px) {
-      .pin-label{
-        font-size: 13px;
-        padding: 8px 10px;
+        padding: 10px 12px;
         border-radius: 12px;
+        gap: 10px;
+      }
+      .pin-label{
+        font-size: 16px;     /* ✅ label más grande en móvil */
+        padding: 10px 14px;
+        border-radius: 14px;
       }
     }
   </style>
@@ -218,103 +201,70 @@
     <div class="mapa-inner" id="mapaInner">
       <img id="mapImg" src="img/busan.webp" alt="Mapa de Busan" class="mapa-base">
 
-      <!-- ===================== DÍA 7 (granate) ===================== -->
+      <!-- DÍA 7 -->
       <a href="lugares/busan/gukje-and-bupyeong-markets.html">
-        <img src="img/pin-lugar.png"
-             class="pin day-granate"
-             style="top:61.5%; left:44.5%;"
-             data-day="7"
-             data-name="Gukje and Bupyeong Markets">
+        <img src="img/pin-lugar.png" class="pin day-granate"
+             style="top:61.5%; left:44.5%;" data-day="7" data-name="Gukje and Bupyeong Markets">
       </a>
 
       <a href="lugares/busan/biff-square-and-jajangmyeon.html">
-        <img src="img/pin-lugar.png"
-             class="pin day-granate"
-             style="top:64.5%; left:45%;"
-             data-day="7"
-             data-name="BIFF Square and Jajangmyeon">
+        <img src="img/pin-lugar.png" class="pin day-granate"
+             style="top:64.5%; left:45%;" data-day="7" data-name="BIFF Square and Jajangmyeon">
       </a>
 
-      <!-- ===================== DÍA 8 (dorado) ===================== -->
+      <!-- DÍA 8 -->
       <a href="lugares/busan/beomeosa-temple.html">
-        <img src="img/pin-lugar.png"
-             class="pin day-dorado"
-             style="top:4%; left:65%;"
-             data-day="8"
-             data-name="Beomeosa Temple">
+        <img src="img/pin-lugar.png" class="pin day-dorado"
+             style="top:4%; left:65%;" data-day="8" data-name="Beomeosa Temple">
       </a>
 
       <a href="lugares/busan/jagalchi-market.html">
-        <img src="img/pin-lugar.png"
-             class="pin day-dorado"
-             style="top:66%; left:46.5%;"
-             data-day="8"
-             data-name="Jagalchi Market">
+        <img src="img/pin-lugar.png" class="pin day-dorado"
+             style="top:66%; left:46.5%;" data-day="8" data-name="Jagalchi Market">
       </a>
 
       <a href="lugares/busan/gamcheon-culture-village.html">
-        <img src="img/pin-lugar.png"
-             class="pin day-dorado"
-             style="top:64%; left:38%;"
-             data-day="8"
-             data-name="Gamcheon Culture Village">
+        <img src="img/pin-lugar.png" class="pin day-dorado"
+             style="top:64%; left:38%;" data-day="8" data-name="Gamcheon Culture Village">
       </a>
 
       <a href="lugares/busan/songdo-beach.html">
-        <img src="img/pin-lugar.png"
-             class="pin day-dorado"
-             style="top:75.5%; left:41%;"
-             data-day="8"
-             data-name="Songdo Beach">
+        <img src="img/pin-lugar.png" class="pin day-dorado"
+             style="top:75.5%; left:41%;" data-day="8" data-name="Songdo Beach">
       </a>
 
-      <!-- ===================== DÍA 9 (azul) ===================== -->
+      <!-- DÍA 9 -->
       <a href="lugares/busan/haedong-yonggungsa-temple.html">
-        <img src="img/pin-lugar.png"
-             class="pin day-azul"
-             style="top:33%; left:90%;"
-             data-day="9"
-             data-name="Haedong Yonggungsa Temple">
+        <img src="img/pin-lugar.png" class="pin day-azul"
+             style="top:33%; left:90%;" data-day="9" data-name="Haedong Yonggungsa Temple">
       </a>
 
       <a href="lugares/busan/haeundae-beach-busan-x-the-sky-and-sky-capsule.html">
-        <img src="img/pin-lugar.png"
-             class="pin day-azul"
-             style="top:45%; left:81%;"
-             data-day="9"
-             data-name="Haeundae Beach, BUSAN X the SKY and Sky Capsule">
+        <img src="img/pin-lugar.png" class="pin day-azul"
+             style="top:45%; left:81%;" data-day="9" data-name="Haeundae Beach, BUSAN X the SKY and Sky Capsule">
       </a>
 
       <a href="lugares/busan/dongbaekseom.html">
-        <img src="img/pin-lugar.png"
-             class="pin day-azul"
-             style="top:48%; left:77%;"
-             data-day="9"
-             data-name="Dongbaekseom">
+        <img src="img/pin-lugar.png" class="pin day-azul"
+             style="top:48%; left:77%;" data-day="9" data-name="Dongbaekseom">
       </a>
 
-      <!-- ===================== DÍA 10 (verde) ===================== -->
+      <!-- DÍA 10 -->
       <a href="lugares/busan/oryukdo-skywalk-and-igidae-coastal-trail.html">
-        <img src="img/pin-lugar.png"
-             class="pin day-verde"
-             style="top:69%; left:71%;"
-             data-day="10"
-             data-name="Oryukdo Skywalk and Igidae Coastal Trail">
+        <img src="img/pin-lugar.png" class="pin day-verde"
+             style="top:69%; left:71%;" data-day="10" data-name="Oryukdo Skywalk and Igidae Coastal Trail">
       </a>
 
       <a href="lugares/busan/donkatsu.html">
-        <img src="img/pin-lugar.png"
-             class="pin day-verde"
-             style="top:62%; left:46%;"
-             data-day="10"
-             data-name="Donkatsu">
+        <img src="img/pin-lugar.png" class="pin day-verde"
+             style="top:62%; left:46%;" data-day="10" data-name="Donkatsu">
       </a>
 
       <div id="pinLabel" class="pin-label"></div>
     </div>
   </div>
 
-  <div class="legend">
+  <div class="legend" id="legend">
     <span class="key"><span class="dot c-granate"></span>Día 7</span>
     <span class="key"><span class="dot c-dorado"></span>Día 8</span>
     <span class="key"><span class="dot c-azul"></span>Día 9</span>
@@ -322,14 +272,13 @@
   </div>
 
   <script>
-    const tip = document.getElementById('tooltip');
     const label = document.getElementById('pinLabel');
+    const legend = document.getElementById('legend');
 
-    function showTip(text) {
-      tip.textContent = text;
-      tip.style.display = 'block';
-      clearTimeout(showTip._t);
-      showTip._t = setTimeout(() => tip.style.display = 'none', 2200);
+    function getLegendH() {
+      if (!legend) return 0;
+      const r = legend.getBoundingClientRect();
+      return Math.ceil(r.height + 16 + (window.visualViewport ? (window.innerHeight - visualViewport.height) : 0));
     }
 
     function showPinLabelFor(pin) {
@@ -347,12 +296,30 @@
 
     document.querySelectorAll('.pin').forEach(pin => {
       pin.addEventListener('mouseenter', () => showPinLabelFor(pin));
-      pin.addEventListener('click', () => {
-        if (matchMedia("(hover: none)").matches) showPinLabelFor(pin);
+    });
+
+    // (4) Móvil: doble tap -> etiqueta / navegar
+    let lastTouchPin = null;
+    document.querySelectorAll('.mapa-inner a').forEach(a => {
+      const pin = a.querySelector('.pin');
+      if (!pin) return;
+
+      a.addEventListener('click', (e) => {
+        const isTouch = matchMedia("(hover: none)").matches;
+
+        if (!isTouch) return; // desktop: navegar directo
+
+        if (lastTouchPin !== pin) {
+          e.preventDefault();
+          showPinLabelFor(pin);
+          lastTouchPin = pin;
+        } else {
+          lastTouchPin = null; // segundo tap: navegar
+        }
       });
     });
 
-    // ===== Motor pan + zoom =====
+    // ===== Pan + Zoom (alto visible = altura - leyenda) =====
     let scale = 1, tx = 0, ty = 0;
     let SCALE_MIN = 1;
     const SCALE_MAX = 4;
@@ -365,9 +332,13 @@
 
     function clamp(v, min, max) { return Math.min(Math.max(v, min), max); }
 
+    function visibleH() {
+      return Math.max(0, mapa.clientHeight - getLegendH());
+    }
+
     function clampPan() {
       const vw = mapa.clientWidth;
-      const vh = mapa.clientHeight;
+      const vh = visibleH();
 
       const scaledW = mapW * scale;
       const scaledH = mapH * scale;
@@ -405,7 +376,7 @@
 
     function initView() {
       const vw = mapa.clientWidth;
-      const vh = mapa.clientHeight;
+      const vh = visibleH();
 
       const cover = Math.max(vw / mapW, vh / mapH);
 
@@ -419,7 +390,6 @@
       aplicarTransform();
     }
 
-    // ===== Pointer Events =====
     const pointers = new Map();
     let lastPan = { x: 0, y: 0 };
     let startDist = 0;
@@ -441,10 +411,7 @@
         const pts = [...pointers.values()];
         startDist = dist(pts[0], pts[1]);
         startScale = scale;
-        pinchCenter = {
-          x: (pts[0].x + pts[1].x) / 2,
-          y: (pts[0].y + pts[1].y) / 2
-        };
+        pinchCenter = { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 };
       }
     });
 
@@ -455,16 +422,14 @@
       if (pointers.size === 1) {
         const dx = e.clientX - lastPan.x;
         const dy = e.clientY - lastPan.y;
-        tx += dx;
-        ty += dy;
+        tx += dx; ty += dy;
         lastPan = { x: e.clientX, y: e.clientY };
         aplicarTransform();
       } else if (pointers.size === 2) {
         const pts = [...pointers.values()];
         const d = dist(pts[0], pts[1]);
         if (startDist <= 0) return;
-        const factor = d / startDist;
-        zoomAt(pinchCenter.x, pinchCenter.y, startScale * factor);
+        zoomAt(pinchCenter.x, pinchCenter.y, startScale * (d / startDist));
       }
     });
 

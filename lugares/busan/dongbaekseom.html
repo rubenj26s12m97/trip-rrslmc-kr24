@@ -10,8 +10,8 @@
     :root{
       --polaroid-w: 235px;
       --photo-h: 165px;
-      --gap-x: 76px;  /* ✅ más gap horizontal */
-      --gap-y: 64px;  /* ✅ más gap vertical */
+      --gap-x: 96px;  /* ✅ más gap entre las 2 de abajo (antes 56) */
+      --gap-y: 52px;
     }
 
     html, body{
@@ -51,8 +51,8 @@
     /* Mundo más grande que la pantalla */
     .stage{
       position: relative;
-      width: 1500px;
-      height: 1000px;
+      width: 1400px;
+      height: 900px;
 
       background:
         radial-gradient(
@@ -63,12 +63,11 @@
         url("../../img/busan/dongbaekseom/01.jpg") center 45% / cover no-repeat;
     }
 
-    /* ✅ Layout centrado en el fondo */
+    /* Layout 1 arriba + 2 abajo, pero en el “mundo” */
     .layout{
       position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
+      top: 150px;
+      left: 200px;
 
       display: grid;
       grid-template-rows: auto auto;
@@ -178,12 +177,16 @@
       :root{
         --polaroid-w: 200px;
         --photo-h: 145px;
-        --gap-x: 52px; /* ✅ más gap también en móvil */
-        --gap-y: 46px;
+        --gap-x: 72px;   /* ✅ gap también mayor en móvil */
+        --gap-y: 34px;
       }
       .stage{
-        width: 1300px;
-        height: 980px;
+        width: 1200px;
+        height: 900px;
+      }
+      .layout{
+        top: 140px;
+        left: 120px;
       }
       .photo{ transform: none; }
       .polaroid{ --lift: 0; }
@@ -196,6 +199,7 @@
 
   <div class="viewport" id="viewport">
     <div class="stage" id="stage">
+      <!-- ✅ id para centrar EXACTO -->
       <section class="layout" id="layout">
 
         <div class="row top">
@@ -230,6 +234,9 @@
   </div>
 
   <script>
+    // ✅ evita que el navegador “recuerde” scroll previo (cuando soporta)
+    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+
     const modal = document.getElementById("modal");
     const modalImg = document.getElementById("modalImg");
 
@@ -252,21 +259,35 @@
       if (e.key === "Escape") closeModal();
     });
 
-    // ✅ Centrado inicial REAL: centra el layout en el viewport
-    window.addEventListener("load", () => {
+    // ✅ Centrado real al layout (no porcentajes) y con 2 frames para asegurar layout listo
+    function clamp(v, min, max){ return Math.min(Math.max(v, min), max); }
+
+    function centerOnLayout(){
       const vp = document.getElementById("viewport");
       const stage = document.getElementById("stage");
       const layout = document.getElementById("layout");
 
-      const layoutLeft = layout.offsetLeft;
-      const layoutTop  = layout.offsetTop;
+      // resetea por si el navegador intentó restaurar
+      vp.scrollTo(0, 0);
 
-      const targetX = layoutLeft + layout.offsetWidth  / 2 - vp.clientWidth  / 2;
-      const targetY = layoutTop  + layout.offsetHeight / 2 - vp.clientHeight / 2;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const layoutCenterX = layout.offsetLeft + layout.offsetWidth / 2;
+          const layoutCenterY = layout.offsetTop  + layout.offsetHeight / 2;
 
-      vp.scrollLeft = Math.max(0, Math.min(stage.offsetWidth  - vp.clientWidth,  targetX));
-      vp.scrollTop  = Math.max(0, Math.min(stage.offsetHeight - vp.clientHeight, targetY));
-    });
+          const targetX = layoutCenterX - vp.clientWidth / 2;
+          const targetY = layoutCenterY - vp.clientHeight / 2;
+
+          const maxX = stage.offsetWidth  - vp.clientWidth;
+          const maxY = stage.offsetHeight - vp.clientHeight;
+
+          vp.scrollLeft = clamp(targetX, 0, Math.max(0, maxX));
+          vp.scrollTop  = clamp(targetY, 0, Math.max(0, maxY));
+        });
+      });
+    }
+
+    window.addEventListener("load", centerOnLayout);
   </script>
 </body>
 </html>

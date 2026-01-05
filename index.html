@@ -17,10 +17,10 @@
     .mapa {
       position: relative;
       width: 100vw;
-      height: 100dvh;              /* ✅ evita el “corte” por barras del navegador */
+      height: 100vh;
       overflow: hidden;
       background: #000;
-      touch-action: none;
+      touch-action: none; /* usamos pan/zoom custom */
     }
 
     .mapa-inner {
@@ -43,18 +43,15 @@
     /* ===== PIN ===== */
     .pin {
       position: absolute;
-      width: 76px;                /* ✅ un poco más grande en desktop */
+      width: 70px;
       height: auto;
       z-index: 10;
       cursor: pointer;
-
       transform: translate(-50%, -100%);
       transition: transform 0.2s ease, filter 0.2s ease;
-
       user-select: none;
       -webkit-user-drag: none;
       touch-action: manipulation;
-      -webkit-tap-highlight-color: transparent;
     }
 
     @media (hover: hover) {
@@ -74,17 +71,18 @@
       }
     }
 
-    /* ✅ móvil: más grandes (antes 42px) */
     @media (max-width: 768px) {
-      .pin { width: 52px; }
+      .pin { width: 42px; }
     }
 
-    /* ✅ área táctil grande SIN mover el centro */
     @media (hover: none) {
       .pin::before {
         content: "";
         position: absolute;
-        inset: -14px;
+        left: -18px;
+        top: -18px;
+        width: calc(100% + 36px);
+        height: calc(100% + 36px);
         background: transparent;
       }
     }
@@ -97,15 +95,12 @@
       padding: 10px 10px 14px;
       border-radius: 10px;
       box-shadow: 0 18px 40px rgba(0,0,0,0.45);
-
       transform: translate3d(-50%, calc(-100% - 50px), 0) rotate(-2deg);
       transform-origin: bottom center;
-
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.15s ease;
       z-index: 30;
-
       will-change: transform;
       backface-visibility: hidden;
     }
@@ -121,11 +116,9 @@
       object-fit: cover;
       border-radius: 8px;
       display: block;
-
       backface-visibility: hidden;
       transform: translateZ(0);
       image-rendering: auto;
-
       pointer-events: none;
     }
 
@@ -297,6 +290,7 @@
       polaroid.style.display = "";
     }
 
+    // En móvil: tocar la polaroid abre la ciudad
     polaroid.addEventListener("click", (e) => {
       e.stopPropagation();
       const isTouch = matchMedia("(hover: none)").matches;
@@ -315,12 +309,19 @@
       pin.addEventListener("touchstart", () => movedDuringTouch = false, { passive: true });
       pin.addEventListener("touchmove", () => movedDuringTouch = true, { passive: true });
 
-      pin.addEventListener("click", e => {
+      pin.addEventListener("click", (e) => {
         const isTouch = matchMedia("(hover: none)").matches;
-        if (!isTouch) return location.href = pin.dataset.link;
 
+        // ✅ CAMBIO 1: en desktop, click = navegar SIEMPRE (sin “primer click polaroid”)
+        if (!isTouch) {
+          location.href = pin.dataset.link;
+          return;
+        }
+
+        // móvil: evita activar si venías arrastrando
         if (movedDuringTouch) return;
 
+        // móvil: primer tap -> mostrar polaroid; segundo tap -> navegar
         if (lastTouchPin !== pin) {
           e.preventDefault();
           showPolaroid(pin);
@@ -331,7 +332,7 @@
       });
     });
 
-    mapa.addEventListener("click", e => {
+    mapa.addEventListener("click", (e) => {
       if (e.target.classList && e.target.classList.contains("pin")) return;
       if (e.target.closest && e.target.closest("#polaroid")) return;
       hidePolaroid();
@@ -359,7 +360,6 @@
         const pts = [...pointers.values()];
         startDist = dist(pts[0], pts[1]);
         startScale = scale;
-
         pinchCenter = {
           x: (pts[0].x + pts[1].x) / 2,
           y: (pts[0].y + pts[1].y) / 2
@@ -382,11 +382,8 @@
         const pts = [...pointers.values()];
         const d = dist(pts[0], pts[1]);
         if (startDist <= 0) return;
-
         const factor = d / startDist;
-        const newScale = startScale * factor;
-
-        zoomAt(pinchCenter.x, pinchCenter.y, newScale);
+        zoomAt(pinchCenter.x, pinchCenter.y, startScale * factor);
       }
     });
 
@@ -402,7 +399,7 @@
     mapa.addEventListener("pointercancel", endPointer);
 
     /* Trackpad / rueda */
-    mapa.addEventListener("wheel", e => {
+    mapa.addEventListener("wheel", (e) => {
       e.preventDefault();
       if (e.ctrlKey) {
         const factor = Math.exp(-e.deltaY * 0.002);

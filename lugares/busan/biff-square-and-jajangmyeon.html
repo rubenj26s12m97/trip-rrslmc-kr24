@@ -10,7 +10,7 @@
     :root{
       --polaroid-w: 225px;
       --photo-h: 158px;
-      --gap-x: 72px; /* ✅ más gap */
+      --gap-x: 84px; /* ✅ más separación (antes 56) */
     }
 
     html, body{
@@ -21,7 +21,6 @@
       overflow: hidden; /* el scroll lo hace .viewport */
     }
 
-    /* Botón volver */
     .back{
       position: fixed;
       top: 14px;
@@ -37,7 +36,6 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* Scroll 2D nativo */
     .viewport{
       position: fixed;
       inset: 0;
@@ -47,12 +45,10 @@
       background: #000;
     }
 
-    /* Mundo más grande que la pantalla */
     .stage{
       position: relative;
-      width: 1500px;
-      height: 1000px;
-
+      width: 1400px;
+      height: 900px;
       background:
         radial-gradient(
           ellipse at center,
@@ -62,12 +58,10 @@
         url("../../img/busan/biff-square-and-jajangmyeon/01.jpg") center / cover no-repeat;
     }
 
-    /* ✅ fila centrada sobre el fondo */
     .row{
       position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
+      top: 170px;
+      left: 180px;
 
       display: flex;
       gap: var(--gap-x);
@@ -75,7 +69,6 @@
       width: max-content;
     }
 
-    /* Polaroid */
     .polaroid{
       width: var(--polaroid-w);
       background: rgba(255,255,255,0.95);
@@ -101,7 +94,6 @@
       }
     }
 
-    /* Chincheta */
     .polaroid::before{
       content:"";
       position:absolute;
@@ -115,7 +107,6 @@
       box-shadow: 0 3px 10px rgba(0,0,0,0.35);
     }
 
-    /* Foto */
     .photo{
       margin-top: 10px;
       width: 100%;
@@ -136,12 +127,10 @@
       pointer-events: none;
     }
 
-    /* Offsets (3 imágenes) */
     .p1{ --lift:  10px; --r:-2deg; }
     .p2{ --lift:  -6px; --r: 2deg; }
     .p3{ --lift:  14px; --r:-1deg; }
 
-    /* Modal */
     .modal{
       position: fixed;
       inset: 0;
@@ -160,16 +149,19 @@
       border-radius: 14px;
     }
 
-    /* Móvil */
     @media (max-width: 768px){
       :root{
         --polaroid-w: 200px;
         --photo-h: 145px;
-        --gap-x: 54px; /* ✅ más gap también en móvil */
+        --gap-x: 64px; /* ✅ también más gap en móvil */
       }
       .stage{
-        width: 1300px;
-        height: 980px;
+        width: 1200px;
+        height: 900px;
+      }
+      .row{
+        top: 160px;
+        left: 120px;
       }
       .photo{ transform: none; }
       .polaroid{ --lift: 0; }
@@ -182,7 +174,8 @@
 
   <div class="viewport" id="viewport">
     <div class="stage" id="stage">
-      <div class="row" id="row">
+      <!-- ✅ id para centrar EXACTO -->
+      <div class="row" id="layout">
         <div class="polaroid p1" data-src="../../img/busan/biff-square-and-jajangmyeon/01.jpg">
           <div class="photo"><img src="../../img/busan/biff-square-and-jajangmyeon/01.jpg" alt=""></div>
         </div>
@@ -203,6 +196,8 @@
   </div>
 
   <script>
+    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+
     const modal = document.getElementById("modal");
     const modalImg = document.getElementById("modalImg");
 
@@ -219,26 +214,37 @@
     }
 
     modal.addEventListener("click", closeModal);
-
     window.addEventListener("keydown", e=>{
       if(e.key === "Escape") closeModal();
     });
 
-    // ✅ Centrado inicial REAL: centra el bloque de polaroids en el viewport
-    window.addEventListener("load", () => {
+    function clamp(v, min, max){ return Math.min(Math.max(v, min), max); }
+
+    function centerOnLayout(){
       const vp = document.getElementById("viewport");
       const stage = document.getElementById("stage");
-      const row = document.getElementById("row");
+      const layout = document.getElementById("layout");
 
-      const rowLeft = row.offsetLeft;
-      const rowTop  = row.offsetTop;
+      vp.scrollTo(0, 0);
 
-      const targetX = rowLeft + row.offsetWidth  / 2 - vp.clientWidth  / 2;
-      const targetY = rowTop  + row.offsetHeight / 2 - vp.clientHeight / 2;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const cx = layout.offsetLeft + layout.offsetWidth / 2;
+          const cy = layout.offsetTop  + layout.offsetHeight / 2;
 
-      vp.scrollLeft = Math.max(0, Math.min(stage.offsetWidth  - vp.clientWidth,  targetX));
-      vp.scrollTop  = Math.max(0, Math.min(stage.offsetHeight - vp.clientHeight, targetY));
-    });
+          const targetX = cx - vp.clientWidth / 2;
+          const targetY = cy - vp.clientHeight / 2;
+
+          const maxX = stage.offsetWidth  - vp.clientWidth;
+          const maxY = stage.offsetHeight - vp.clientHeight;
+
+          vp.scrollLeft = clamp(targetX, 0, Math.max(0, maxX));
+          vp.scrollTop  = clamp(targetY, 0, Math.max(0, maxY));
+        });
+      });
+    }
+
+    window.addEventListener("load", centerOnLayout);
   </script>
 </body>
 </html>
