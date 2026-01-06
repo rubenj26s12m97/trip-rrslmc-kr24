@@ -219,57 +219,78 @@
       if(e.key === "Escape") closeModal();
     });
 
-    // ---------- FIX: entrar centrado (evita esquina inferior izquierda) ----------
-    // 1) Evita que el navegador restaure scroll previo (bfcache / Safari)
+    // ---------- FIX: entrar centrado (robusto con transforms) ----------
+    // Evita que el navegador restaure scroll previo (bfcache / Safari)
     if ("scrollRestoration" in history) history.scrollRestoration = "manual";
 
     function clamp(v, min, max){ return Math.min(Math.max(v, min), max); }
 
+    // Centra el viewport en el centro real de .row (incluyendo su transform)
     function centerOnRow(){
       const vp = document.getElementById("viewport");
       const stage = document.getElementById("stage");
       const row = document.getElementById("row");
       if (!vp || !stage || !row) return;
 
-      const cx = row.offsetLeft + row.offsetWidth / 2;
-      const cy = row.offsetTop  + row.offsetHeight / 2;
+      // Coordenadas reales en pantalla
+      const vpRect = vp.getBoundingClientRect();
+      const stageRect = stage.getBoundingClientRect();
+      const rowRect = row.getBoundingClientRect();
 
-      const targetX = cx - vp.clientWidth / 2;
-      const targetY = cy - vp.clientHeight / 2;
+      // Centro de la fila en coordenadas "pantalla"
+      const rowCx = rowRect.left + rowRect.width / 2;
+      const rowCy = rowRect.top  + rowRect.height / 2;
 
-      const maxX = stage.offsetWidth  - vp.clientWidth;
-      const maxY = stage.offsetHeight - vp.clientHeight;
+      // Queremos que ese centro caiga en el centro del viewport
+      const vpCx = vpRect.left + vpRect.width / 2;
+      const vpCy = vpRect.top  + vpRect.height / 2;
 
-      vp.scrollLeft = clamp(targetX, 0, Math.max(0, maxX));
-      vp.scrollTop  = clamp(targetY, 0, Math.max(0, maxY));
+      // Diferencia (en px de pantalla) => se traduce 1:1 a scroll porque stage no está escalado
+      const dx = rowCx - vpCx;
+      const dy = rowCy - vpCy;
+
+      // Scroll actual + corrección
+      let targetX = vp.scrollLeft + dx;
+      let targetY = vp.scrollTop  + dy;
+
+      // Clamp a los límites reales scrollables
+      const maxX = Math.max(0, stage.scrollWidth  - vp.clientWidth);
+      const maxY = Math.max(0, stage.scrollHeight - vp.clientHeight);
+
+      targetX = clamp(targetX, 0, maxX);
+      targetY = clamp(targetY, 0, maxY);
+
+      vp.scrollLeft = targetX;
+      vp.scrollTop  = targetY;
     }
 
     function hardResetScroll(){
       const vp = document.getElementById("viewport");
       if (!vp) return;
-
-      // reset duro + “nudges” (Safari/iOS a veces ignora el primer set)
-      vp.scrollTo(0, 0);
-      vp.scrollLeft = 1; vp.scrollTop = 1;
-      vp.scrollLeft = 0; vp.scrollTop = 0;
+      vp.scrollTo({ left: 0, top: 0, behavior: "auto" });
     }
 
     function forceCenter(){
       hardResetScroll();
 
-      // 2 frames + retries (iOS a veces aplica restauración tarde)
+      // 2 frames: asegura layout + imágenes en memoria (Safari/iOS)
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           centerOnRow();
-          setTimeout(centerOnRow, 60);
-          setTimeout(centerOnRow, 180);
-          setTimeout(centerOnRow, 420);
+          // retries por si Safari aplica restauración tarde o cambia layout tras cargar imágenes
+          setTimeout(centerOnRow, 80);
+          setTimeout(centerOnRow, 220);
+          setTimeout(centerOnRow, 520);
         });
       });
     }
 
     // Antes incluso de load
-    document.addEventListener("DOMContentLoaded", hardResetScroll);
+    document.addEventListener("DOMContentLoaded", () => {
+      hardResetScroll();
+      // primer intento rápido (ya suele valer en desktop)
+      requestAnimationFrame(centerOnRow);
+    });
 
     // Load + bfcache
     window.addEventListener("load", forceCenter);
@@ -281,7 +302,7 @@
 
     // Rotación / cambio de tamaño
     window.addEventListener("orientationchange", () => setTimeout(forceCenter, 250));
-    window.addEventListener("resize", () => setTimeout(forceCenter, 120));
+    window.addEventListener("resize", () => setTimeout(forceCenter, 140));
   </script>
 </body>
 </html>
