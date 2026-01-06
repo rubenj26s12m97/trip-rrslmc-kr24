@@ -53,17 +53,24 @@
       transform: translateZ(0);
     }
 
-    /* Viewport */
+    /* ✅ FIX: barra del sistema móvil (svh/dvh + safe-area) */
     .mapa {
       position: relative;
       width: 100vw;
-      height: 100vh;
+
+      height: 100svh;
+      height: 100dvh;
+      height: 100vh; /* fallback */
+
       overflow: hidden;
-      touch-action: none; /* pan/zoom custom */
+      touch-action: none;
       background: #000;
+
+      /* ✅ reserva para home-indicator / barra navegación */
+      padding-bottom: env(safe-area-inset-bottom);
+      box-sizing: border-box;
     }
 
-    /* Mundo (mapa + pins) */
     .mapa-inner {
       position: absolute;
       left: 0;
@@ -84,7 +91,6 @@
       transform: translateZ(0);
     }
 
-    /* Pins */
     .pin {
       position: absolute;
       width: var(--pin-w-desktop);
@@ -120,7 +126,6 @@
       .pin { width: var(--pin-w-mobile); }
     }
 
-    /* Colores */
     .day-granate { filter: hue-rotate(350deg) saturate(95%) brightness(95%); }
     .day-dorado  { filter: hue-rotate(50deg)  saturate(110%) brightness(108%); }
     .day-azul    { filter: hue-rotate(200deg) saturate(95%) brightness(95%); }
@@ -153,7 +158,6 @@
     .c-azul    { background: #1f6fa6; }
     .c-verde   { background: #2f8f4e; }
 
-    /* Label */
     .pin-label {
       position: absolute;
       z-index: 99999;
@@ -189,7 +193,7 @@
         gap: 10px;
       }
       .pin-label{
-        font-size: 25px;          /* ✅ más grande en móvil (cambio 4) */
+        font-size: 25px;
         padding: 10px 14px;
         border-radius: 14px;
       }
@@ -303,8 +307,7 @@
     function getLegendH() {
       if (!legend) return 0;
       const r = legend.getBoundingClientRect();
-      const safe = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--safe-bot')) || 0;
-      return Math.ceil(r.height + 16 + safe);
+      return Math.ceil(r.height + 16 + (window.visualViewport ? (window.innerHeight - visualViewport.height) : 0));
     }
 
     function showPinLabelFor(pin) {
@@ -318,12 +321,10 @@
       showPinLabelFor._t = setTimeout(() => label.classList.remove('show'), 1800);
     }
 
-    // Hover: etiqueta
     document.querySelectorAll('.pin').forEach(pin => {
       pin.addEventListener('mouseenter', () => showPinLabelFor(pin));
     });
 
-    // (4) Móvil: doble tap => 1º etiqueta, 2º navegar
     let lastTouchPin = null;
     document.querySelectorAll('.mapa-inner a').forEach(a => {
       const pin = a.querySelector('.pin');
@@ -331,23 +332,19 @@
 
       a.addEventListener('click', (e) => {
         const isTouch = matchMedia("(hover: none)").matches;
-
-        // Desktop: navega directo
         if (!isTouch) return;
 
-        // Touch:
         if (lastTouchPin !== pin) {
           e.preventDefault();
           showPinLabelFor(pin);
           lastTouchPin = pin;
         } else {
-          // segundo tap: dejar navegar
           lastTouchPin = null;
         }
       });
     });
 
-    // ===== Pan + Zoom (con “alto visible” restando la leyenda) =====
+    // ===== Pan + Zoom =====
     let scale = 1, tx = 0, ty = 0;
     let SCALE_MIN = 1;
     const SCALE_MAX = 4;
@@ -360,8 +357,13 @@
 
     function clamp(v, min, max) { return Math.min(Math.max(v, min), max); }
 
+    function getSafeBottomPx() {
+      // Lee el padding-bottom real aplicado (env(safe-area-inset-bottom))
+      return parseFloat(getComputedStyle(mapa).paddingBottom) || 0;
+    }
+
     function visibleH() {
-      return Math.max(0, mapa.clientHeight - getLegendH());
+      return Math.max(0, mapa.clientHeight - getLegendH() - getSafeBottomPx());
     }
 
     function clampPan() {
@@ -418,7 +420,6 @@
       aplicarTransform();
     }
 
-    // Pointer events
     const pointers = new Map();
     let lastPan = { x: 0, y: 0 };
     let startDist = 0;
@@ -473,7 +474,6 @@
     mapa.addEventListener("pointerup", endPointer);
     mapa.addEventListener("pointercancel", endPointer);
 
-    // Wheel
     mapa.addEventListener("wheel", (e) => {
       e.preventDefault();
       if (e.ctrlKey) {
@@ -500,6 +500,14 @@
       if (!mapW || !mapH) return;
       initView();
     });
+
+    // ✅ iOS: cuando cambian barras (visualViewport), recalcula
+    if (window.visualViewport) {
+      visualViewport.addEventListener("resize", () => {
+        if (!mapW || !mapH) return;
+        initView();
+      });
+    }
   </script>
 </body>
 </html>

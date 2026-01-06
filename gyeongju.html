@@ -8,9 +8,14 @@
 
   <style>
     :root{
-      /* ✅ (2) Pines más grandes para Gyeongju */
+      /* Pines */
       --pin-w-desktop: 46px;
-      --pin-w-mobile: 70px;
+
+      /* ✅ más grandes en móvil */
+      --pin-w-mobile: 92px;
+
+      /* ✅ extra suave solo móvil (opcional) */
+      --pin-scale-mobile: 1.10;
     }
 
     html, body {
@@ -115,8 +120,30 @@
       }
     }
 
+    /* ✅ SOLO móvil: más grandes + un pelín de scale opcional */
     @media (max-width: 768px) {
-      .pin { width: var(--pin-w-mobile); }
+      .pin{
+        width: var(--pin-w-mobile);
+        transform: translate(-50%, -50%) scale(var(--pin-scale-mobile)) translateZ(0);
+      }
+
+      /* Mantener coherencia en hover/activo si aplica (tablets con hover) */
+      @media (hover: hover) {
+        .pin:hover,
+        .pin.activo {
+          transform: translate(-50%, -50%)
+                     scale(calc(var(--pin-scale-mobile) * 1.08))
+                     translateZ(0);
+        }
+      }
+      @media (hover: none) {
+        .pin.activo {
+          transform: translate(-50%, -50%)
+                     scale(calc(var(--pin-scale-mobile) * 1.05))
+                     translateZ(0);
+        }
+      }
+
       .back { padding: 10px 12px; font-size: 14px; border-radius: 12px; }
       .tooltip { top: 50px; font-size: 13px; }
     }
@@ -170,7 +197,7 @@
 
     @media (max-width: 768px){
       .pin-label{
-        font-size: 40px;   /* ✅ label más grande en móvil */
+        font-size: 40px;
         padding: 10px 14px;
         border-radius: 14px;
       }
@@ -259,7 +286,6 @@
       pin.addEventListener('mouseenter', () => showPinLabelFor(pin));
     });
 
-    // (4) Móvil: doble tap -> etiqueta / navegar
     let lastTouchPin = null;
     document.querySelectorAll('.mapa-inner a').forEach(a => {
       const pin = a.querySelector('.pin');
@@ -268,19 +294,19 @@
       a.addEventListener('click', (e) => {
         const isTouch = matchMedia("(hover: none)").matches;
 
-        if (!isTouch) return; // desktop: navegar directo
+        if (!isTouch) return;
 
         if (lastTouchPin !== pin) {
           e.preventDefault();
           showPinLabelFor(pin);
           lastTouchPin = pin;
         } else {
-          lastTouchPin = null; // segundo tap: navegar
+          lastTouchPin = null;
         }
       });
     });
 
-    // ===== Pan + Zoom (alto visible = altura - leyenda) =====
+    // ===== Pan + Zoom =====
     let scale = 1, tx = 0, ty = 0;
     let SCALE_MIN = 1;
     const SCALE_MAX = 4;
@@ -434,3 +460,4 @@
   </script>
 </body>
 </html>
+

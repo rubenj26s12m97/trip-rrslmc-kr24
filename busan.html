@@ -10,11 +10,7 @@
     :root{
       /* Pines */
       --pin-w-desktop: 56px;
-      --pin-w-mobile: 70px;
-
-      /* ✅ Compensación visual en móvil (porque los pines se escalan con el mapa) */
-      --pin-scale-desktop: 1;
-      --pin-scale-mobile: 1.25;
+      --pin-w-mobile: 92px; /* ✅ más grandes en móvil */
 
       /* Labels */
       --label-font-desktop: 14px;
@@ -62,13 +58,22 @@
       transform: translateZ(0);
     }
 
+    /* ✅ FIX real: barra inferior del móvil (safe area + svh/dvh) */
     .mapa {
       position: relative;
       width: 100vw;
-      height: 100vh;
+
+      height: 100svh;
+      height: 100dvh;
+      height: 100vh; /* fallback */
+
       overflow: hidden;
       touch-action: none;
       background: #000;
+
+      /* ✅ reserva para home-indicator / barra navegación */
+      padding-bottom: env(safe-area-inset-bottom);
+      box-sizing: border-box;
     }
 
     .mapa-inner {
@@ -99,8 +104,7 @@
       z-index: 10;
       cursor: pointer;
 
-      /* ✅ escala extra controlable + centrado */
-      transform: translate(-50%, -50%) scale(var(--pin-scale-desktop)) translateZ(0);
+      transform: translate(-50%, -50%) translateZ(0);
 
       -webkit-tap-highlight-color: transparent;
       user-select: none;
@@ -114,33 +118,37 @@
     @media (hover: hover) {
       .pin:hover,
       .pin.activo {
-        transform: translate(-50%, -50%) scale(calc(var(--pin-scale-desktop) * 1.08)) translateZ(0);
+        transform: translate(-50%, -50%) scale(1.08) translateZ(0);
         z-index: 20;
       }
     }
 
     @media (hover: none) {
       .pin.activo {
-        transform: translate(-50%, -50%) scale(calc(var(--pin-scale-desktop) * 1.05)) translateZ(0);
+        transform: translate(-50%, -50%) scale(1.05) translateZ(0);
         z-index: 20;
       }
     }
 
     @media (max-width: 768px) {
-      .pin {
-        width: var(--pin-w-mobile);
-        transform: translate(-50%, -50%) scale(var(--pin-scale-mobile)) translateZ(0);
+      .pin { width: var(--pin-w-mobile); }
+
+      .back {
+        padding: 10px 12px;
+        border-radius: 12px;
+        font-size: 14px;
       }
-      @media (hover: hover) {
-        .pin:hover,
-        .pin.activo {
-          transform: translate(-50%, -50%) scale(calc(var(--pin-scale-mobile) * 1.08)) translateZ(0);
-        }
+      .tooltip { top: 50px; font-size: 13px; }
+      .legend {
+        font-size: 13px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        gap: 10px;
       }
-      @media (hover: none) {
-        .pin.activo {
-          transform: translate(-50%, -50%) scale(calc(var(--pin-scale-mobile) * 1.05)) translateZ(0);
-        }
+      .pin-label{
+        font-size: var(--label-font-mobile);
+        padding: 10px 14px;
+        border-radius: 14px;
       }
     }
 
@@ -194,26 +202,6 @@
     .pin-label.show {
       opacity: 1;
       transform: translate(-50%, -22px);
-    }
-
-    @media (max-width: 768px) {
-      .back {
-        padding: 10px 12px;
-        border-radius: 12px;
-        font-size: 14px;
-      }
-      .tooltip { top: 50px; font-size: 13px; }
-      .legend {
-        font-size: 13px;
-        padding: 10px 12px;
-        border-radius: 12px;
-        gap: 10px;
-      }
-      .pin-label{
-        font-size: var(--label-font-mobile);
-        padding: 10px 14px;
-        border-radius: 14px;
-      }
     }
   </style>
 </head>
@@ -331,20 +319,19 @@
 
       a.addEventListener('click', (e) => {
         const isTouch = matchMedia("(hover: none)").matches;
-
-        if (!isTouch) return; // desktop: navegar directo
+        if (!isTouch) return;
 
         if (lastTouchPin !== pin) {
           e.preventDefault();
           showPinLabelFor(pin);
           lastTouchPin = pin;
         } else {
-          lastTouchPin = null; // segundo tap: navegar
+          lastTouchPin = null;
         }
       });
     });
 
-    // ===== Pan + Zoom (alto visible = altura - leyenda) =====
+    // ===== Pan + Zoom =====
     let scale = 1, tx = 0, ty = 0;
     let SCALE_MIN = 1;
     const SCALE_MAX = 4;
@@ -357,8 +344,17 @@
 
     function clamp(v, min, max) { return Math.min(Math.max(v, min), max); }
 
+    /* ✅ Alto realmente visible: resta la leyenda + safe-area inferior + (si existe) “teclado/URL bar” */
+    function getSafeBottomPx() {
+      // env(safe-area-inset-bottom) no se puede leer directamente en JS,
+      // pero podemos aproximar: si hay visualViewport, la diferencia suele capturar barras UI móviles.
+      // El padding-bottom ya lo reserva el CSS; aquí solo lo medimos leyendo el computed style.
+      const pb = parseFloat(getComputedStyle(mapa).paddingBottom) || 0;
+      return pb;
+    }
+
     function visibleH() {
-      return Math.max(0, mapa.clientHeight - getLegendH());
+      return Math.max(0, mapa.clientHeight - getLegendH() - getSafeBottomPx());
     }
 
     function clampPan() {
@@ -492,9 +488,17 @@
     });
 
     window.addEventListener("resize", () => {
-      if (!mapW || !mapH) return;
+      if (!mapW || ! mapH) return;
       initView();
     });
+
+    // ✅ Muy útil en iOS: cuando cambia visualViewport (barras), recalcula
+    if (window.visualViewport) {
+      visualViewport.addEventListener("resize", () => {
+        if (!mapW || !mapH) return;
+        initView();
+      });
+    }
   </script>
 </body>
 </html>
