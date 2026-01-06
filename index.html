@@ -7,6 +7,10 @@
   <meta name="robots" content="noindex, nofollow">
 
   <style>
+    :root{
+      --vh: 1vh; /* ✅ se sobreescribe por JS con visualViewport */
+    }
+
     html, body {
       height: 100%;
       margin: 0;
@@ -17,7 +21,10 @@
     .mapa {
       position: relative;
       width: 100vw;
-      height: 100vh;
+
+      /* ✅ clave: altura real visible en móvil (evita que la UI inferior tape el mapa) */
+      height: calc(var(--vh) * 100);
+
       overflow: hidden;
       background: #000;
       touch-action: none;
@@ -184,6 +191,16 @@
   </div>
 
   <script>
+    /* ✅ FIX “menú inferior tapa el mapa”:
+       usamos visualViewport.height para calcular un vh real. */
+    function setRealVh(){
+      const h = (window.visualViewport ? window.visualViewport.height : window.innerHeight);
+      document.documentElement.style.setProperty('--vh', (h * 0.01) + 'px');
+    }
+    setRealVh();
+    window.addEventListener('resize', setRealVh);
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', setRealVh);
+
     let scale = 1, tx = 0, ty = 0;
     let SCALE_MIN = 1;
     const SCALE_MAX = 4;
@@ -221,6 +238,7 @@
 
     function aplicarTransform() {
       clampPan();
+      mapaInner.style.transformRef = `translate(${tx}px, ${ty}px) scale(${scale})`;
       mapaInner.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
       if (polaroid.classList.contains("visible") && activePin) positionPolaroid(activePin);
     }
@@ -288,7 +306,6 @@
       polaroid.style.display = "";
     }
 
-    // ✅ MUY IMPORTANTE: no dejes que el pan/zoom "se coma" los clics del polaroid
     polaroid.addEventListener("pointerdown", (e) => e.stopPropagation());
     polaroid.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -300,7 +317,6 @@
     });
 
     pins.forEach(pin => {
-      // ✅ Impide que el gesto de mapa capture cuando empiezas sobre un pin
       pin.addEventListener("pointerdown", (e) => e.stopPropagation());
 
       pin.addEventListener("mouseenter", () => showPolaroid(pin));
@@ -351,7 +367,6 @@
     }
 
     mapa.addEventListener("pointerdown", (e) => {
-      // ✅ Si empiezas el gesto sobre pin/polaroid, NO captures pan/zoom
       if (e.target.closest && (e.target.closest(".pin") || e.target.closest("#polaroid"))) return;
 
       mapa.setPointerCapture(e.pointerId);
@@ -441,8 +456,16 @@
 
     window.addEventListener("resize", () => {
       if (!mapW || !mapH) return;
+      setRealVh();      // ✅ importante
       initView();
     });
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", () => {
+        if (!mapW || !mapH) return;
+        setRealVh();    // ✅ importante
+        initView();
+      });
+    }
   </script>
 </body>
 </html>

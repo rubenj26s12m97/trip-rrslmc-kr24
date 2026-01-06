@@ -44,6 +44,10 @@
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain;
       background: #000;
+
+      /* ✅ evita “anclajes” raros de scroll al cargar */
+      overflow-anchor: none;
+      scroll-behavior: auto;
     }
 
     .stage{
@@ -215,7 +219,8 @@
       if(e.key === "Escape") closeModal();
     });
 
-    // ---------- FIX: entrar centrado (evita restauración a esquina) ----------
+    // ---------- FIX: entrar centrado (evita esquina inferior izquierda) ----------
+    // 1) Evita que el navegador restaure scroll previo (bfcache / Safari)
     if ("scrollRestoration" in history) history.scrollRestoration = "manual";
 
     function clamp(v, min, max){ return Math.min(Math.max(v, min), max); }
@@ -239,26 +244,44 @@
       vp.scrollTop  = clamp(targetY, 0, Math.max(0, maxY));
     }
 
-    function forceCenter(){
+    function hardResetScroll(){
       const vp = document.getElementById("viewport");
       if (!vp) return;
 
-      // reset duro (Safari puede “pisar” después)
-      vp.scrollLeft = 0;
-      vp.scrollTop  = 0;
+      // reset duro + “nudges” (Safari/iOS a veces ignora el primer set)
+      vp.scrollTo(0, 0);
+      vp.scrollLeft = 1; vp.scrollTop = 1;
+      vp.scrollLeft = 0; vp.scrollTop = 0;
+    }
 
+    function forceCenter(){
+      hardResetScroll();
+
+      // 2 frames + retries (iOS a veces aplica restauración tarde)
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           centerOnRow();
           setTimeout(centerOnRow, 60);
-          setTimeout(centerOnRow, 160);
+          setTimeout(centerOnRow, 180);
+          setTimeout(centerOnRow, 420);
         });
       });
     }
 
+    // Antes incluso de load
+    document.addEventListener("DOMContentLoaded", hardResetScroll);
+
+    // Load + bfcache
     window.addEventListener("load", forceCenter);
-    window.addEventListener("pageshow", forceCenter);
+    window.addEventListener("pageshow", (e) => {
+      // si vuelve desde caché (Safari), fuerza sí o sí
+      if (e.persisted) forceCenter();
+      else forceCenter();
+    });
+
+    // Rotación / cambio de tamaño
     window.addEventListener("orientationchange", () => setTimeout(forceCenter, 250));
+    window.addEventListener("resize", () => setTimeout(forceCenter, 120));
   </script>
 </body>
 </html>

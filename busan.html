@@ -8,9 +8,17 @@
 
   <style>
     :root{
-      /* ✅ (2) Pines más grandes para Busan */
+      /* Pines */
       --pin-w-desktop: 56px;
       --pin-w-mobile: 70px;
+
+      /* ✅ Compensación visual en móvil (porque los pines se escalan con el mapa) */
+      --pin-scale-desktop: 1;
+      --pin-scale-mobile: 1.25;
+
+      /* Labels */
+      --label-font-desktop: 14px;
+      --label-font-mobile: 20px;
     }
 
     html, body {
@@ -90,7 +98,10 @@
       height: auto;
       z-index: 10;
       cursor: pointer;
-      transform: translate(-50%, -50%) translateZ(0);
+
+      /* ✅ escala extra controlable + centrado */
+      transform: translate(-50%, -50%) scale(var(--pin-scale-desktop)) translateZ(0);
+
       -webkit-tap-highlight-color: transparent;
       user-select: none;
       -webkit-user-drag: none;
@@ -103,20 +114,34 @@
     @media (hover: hover) {
       .pin:hover,
       .pin.activo {
-        transform: translate(-50%, -50%) scale(1.08) translateZ(0);
+        transform: translate(-50%, -50%) scale(calc(var(--pin-scale-desktop) * 1.08)) translateZ(0);
         z-index: 20;
       }
     }
 
     @media (hover: none) {
       .pin.activo {
-        transform: translate(-50%, -50%) scale(1.05) translateZ(0);
+        transform: translate(-50%, -50%) scale(calc(var(--pin-scale-desktop) * 1.05)) translateZ(0);
         z-index: 20;
       }
     }
 
     @media (max-width: 768px) {
-      .pin { width: var(--pin-w-mobile); }
+      .pin {
+        width: var(--pin-w-mobile);
+        transform: translate(-50%, -50%) scale(var(--pin-scale-mobile)) translateZ(0);
+      }
+      @media (hover: hover) {
+        .pin:hover,
+        .pin.activo {
+          transform: translate(-50%, -50%) scale(calc(var(--pin-scale-mobile) * 1.08)) translateZ(0);
+        }
+      }
+      @media (hover: none) {
+        .pin.activo {
+          transform: translate(-50%, -50%) scale(calc(var(--pin-scale-mobile) * 1.05)) translateZ(0);
+        }
+      }
     }
 
     .day-granate { filter: hue-rotate(350deg) saturate(95%) brightness(95%); }
@@ -158,7 +183,7 @@
       color: #fff;
       padding: 10px 12px;
       border-radius: 14px;
-      font-size: 14px;
+      font-size: var(--label-font-desktop);
       font-weight: 650;
       white-space: nowrap;
       pointer-events: none;
@@ -185,7 +210,7 @@
         gap: 10px;
       }
       .pin-label{
-        font-size: 40px;     /* ✅ label más grande en móvil */
+        font-size: var(--label-font-mobile);
         padding: 10px 14px;
         border-radius: 14px;
       }
@@ -298,7 +323,7 @@
       pin.addEventListener('mouseenter', () => showPinLabelFor(pin));
     });
 
-    // (4) Móvil: doble tap -> etiqueta / navegar
+    // Móvil: doble tap -> etiqueta / navegar
     let lastTouchPin = null;
     document.querySelectorAll('.mapa-inner a').forEach(a => {
       const pin = a.querySelector('.pin');

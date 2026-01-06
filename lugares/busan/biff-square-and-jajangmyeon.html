@@ -44,6 +44,10 @@
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain;
       background: #000;
+
+      /* ✅ evita “anclajes”/saltos raros al cargar */
+      overflow-anchor: none;
+      scroll-behavior: auto;
     }
 
     .stage{
@@ -215,7 +219,7 @@
       if(e.key === "Escape") closeModal();
     });
 
-    // ---------- FIX: entrar centrado (evita restauración a esquina) ----------
+    // ---------- FIX: entrar centrado (evita restauración a esquina inferior izquierda) ----------
     if ("scrollRestoration" in history) history.scrollRestoration = "manual";
 
     function clamp(v, min, max){ return Math.min(Math.max(v, min), max); }
@@ -239,25 +243,40 @@
       vp.scrollTop  = clamp(targetY, 0, Math.max(0, maxY));
     }
 
-    function forceCenter(){
+    function hardResetScroll(){
       const vp = document.getElementById("viewport");
       if (!vp) return;
 
-      vp.scrollLeft = 0;
-      vp.scrollTop  = 0;
+      vp.scrollTo(0, 0);
+      // “nudge” (Safari/iOS a veces ignora el primer set)
+      vp.scrollLeft = 1; vp.scrollTop = 1;
+      vp.scrollLeft = 0; vp.scrollTop = 0;
+    }
+
+    function forceCenter(){
+      hardResetScroll();
 
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           centerOnRow();
           setTimeout(centerOnRow, 60);
-          setTimeout(centerOnRow, 160);
+          setTimeout(centerOnRow, 180);
+          setTimeout(centerOnRow, 420);
         });
       });
     }
 
+    document.addEventListener("DOMContentLoaded", hardResetScroll);
+
     window.addEventListener("load", forceCenter);
-    window.addEventListener("pageshow", forceCenter);
+    window.addEventListener("pageshow", (e) => {
+      // si vuelve desde bfcache
+      if (e.persisted) forceCenter();
+      else forceCenter();
+    });
+
     window.addEventListener("orientationchange", () => setTimeout(forceCenter, 250));
+    window.addEventListener("resize", () => setTimeout(forceCenter, 120));
   </script>
 </body>
 </html>
