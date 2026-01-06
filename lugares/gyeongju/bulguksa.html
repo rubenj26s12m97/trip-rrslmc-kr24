@@ -14,45 +14,23 @@
       --gap-x-3: 58px;
       --gap-x-4: 46px;
       --gap-y: 56px;
+
+      --center-y: -10px; /* ✅ ajuste fino: + baja, - sube */
     }
 
-    html, body {
+    html, body{
       margin: 0;
       height: 100%;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background: #000;
-
-      /* ✅ patrón C: permitir scroll */
-      overflow-y: auto;
-      overflow-x: hidden;
-      -webkit-overflow-scrolling: touch;
+      overflow: hidden; /* ✅ el scroll lo hace .viewport */
     }
 
-    /* Fondo */
-    .bg {
-      position: fixed;
-      inset: 0;
-      background: url("../../img/gyeongju/bulguksa/06.jpg") center / cover no-repeat;
-      z-index: 0;
-    }
-
-    .shade {
-      position: fixed;
-      inset: 0;
-      background: radial-gradient(
-        ellipse at center,
-        rgba(0,0,0,0.12),
-        rgba(0,0,0,0.60)
-      );
-      z-index: 1;
-      pointer-events: none;
-    }
-
-    .back {
+    .back{
       position: fixed;
       top: 14px;
       left: 14px;
-      z-index: 10;
+      z-index: 20;
       background: rgba(255,255,255,0.92);
       color: #000;
       text-decoration: none;
@@ -60,26 +38,47 @@
       border-radius: 12px;
       font-size: 14px;
       box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+      -webkit-tap-highlight-color: transparent;
     }
 
-    /* Contenedor scrolleable */
-    .board {
+    .viewport{
+      position: fixed;
+      inset: 0;
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      background: #000;
+
+      /* ✅ evita “anclajes” raros */
+      overflow-anchor: none;
+      scroll-behavior: auto;
+    }
+
+    .stage{
       position: relative;
-      z-index: 5;
-      min-height: 100vh;
-      display: grid;
-      place-items: start center;
-      padding: 70px 24px 70px;
-      box-sizing: border-box;
+      width: 1400px;
+      height: 900px;
+
+      background:
+        radial-gradient(
+          ellipse at center,
+          rgba(0,0,0,0.12),
+          rgba(0,0,0,0.60)
+        ),
+        url("../../img/gyeongju/bulguksa/06.jpg") center / cover no-repeat;
     }
 
     .layout{
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, calc(-50% + var(--center-y)));
+
       display: grid;
       grid-template-rows: auto auto auto;
       row-gap: var(--gap-y);
       justify-items: center;
-      transform: translateY(-10px);
-      width: 100%;
+      width: max-content;
     }
 
     .row-3{
@@ -88,6 +87,7 @@
       column-gap: var(--gap-x-3);
       justify-content: center;
       align-items: start;
+      width: max-content;
     }
 
     .row-4{
@@ -96,9 +96,9 @@
       column-gap: var(--gap-x-4);
       justify-content: center;
       align-items: start;
+      width: max-content;
     }
 
-    /* Polaroid */
     .polaroid{
       width: var(--polaroid-w);
       background: rgba(255,255,255,0.95);
@@ -108,6 +108,7 @@
       cursor: pointer;
       position: relative;
       user-select: none;
+      -webkit-tap-highlight-color: transparent;
 
       transform: translateY(var(--lift, 0px)) rotate(var(--r, 0deg));
       transition: transform .16s ease, box-shadow .16s ease;
@@ -115,7 +116,9 @@
 
     @media (hover: hover){
       .polaroid:hover{
-        transform: translateY(calc(var(--lift, 0px) - 2px)) rotate(var(--r, 0deg)) scale(1.03);
+        transform: translateY(calc(var(--lift, 0px) - 2px))
+                   rotate(var(--r, 0deg))
+                   scale(1.03);
         box-shadow: 0 18px 38px rgba(0,0,0,0.45);
         z-index: 20;
       }
@@ -149,6 +152,9 @@
       height: 100%;
       object-fit: cover;
       display:block;
+      user-select: none;
+      -webkit-user-drag: none;
+      pointer-events: none;
     }
 
     /* Offsets corcho (3 / 4 / 3) */
@@ -165,7 +171,6 @@
     .p9  { --lift: 10px; --r: -2deg; }
     .p10 { --lift: -4px; --r:  1deg; }
 
-    /* Modal */
     .modal{
       position: fixed;
       inset: 0;
@@ -175,6 +180,7 @@
       justify-content: center;
       z-index: 50;
       padding: 18px;
+      box-sizing: border-box;
     }
     .modal.open{ display:flex; }
     .modal img{
@@ -185,8 +191,7 @@
       box-shadow: 0 18px 45px rgba(0,0,0,0.55);
     }
 
-    /* ✅ móvil: NO reflow a 3 columnas forzado.
-       Mantener 3/4/3 y permitir scroll horizontal por fila */
+    /* ✅ móvil: mantener 3/4/3 y permitir scroll horizontal por fila */
     @media (max-width: 1100px){
       :root{
         --polaroid-w: 160px;
@@ -194,23 +199,16 @@
         --gap-x-3: 22px;
         --gap-x-4: 18px;
         --gap-y: 42px;
+        --center-y: -10px;
       }
 
-      .row-3{
-        grid-template-columns: repeat(3, var(--polaroid-w));
-        column-gap: var(--gap-x-3);
-        justify-content: start;
-
-        overflow-x: auto;
-        overflow-y: visible;
-        -webkit-overflow-scrolling: touch;
-        padding: 0 10px 10px;
-        scroll-snap-type: x mandatory;
+      .stage{
+        width: 1200px;
+        height: 900px;
       }
 
+      .row-3,
       .row-4{
-        grid-template-columns: repeat(4, var(--polaroid-w));
-        column-gap: var(--gap-x-4);
         justify-content: start;
 
         overflow-x: auto;
@@ -227,65 +225,129 @@
 </head>
 
 <body>
-  <div class="bg"></div>
-  <div class="shade"></div>
-
   <a class="back" href="../../gyeongju.html">← Volver a Gyeongju</a>
 
-  <main class="board">
-    <section class="layout">
+  <div class="viewport" id="viewport">
+    <div class="stage" id="stage">
+      <section class="layout" id="layout">
 
-      <!-- Fila 1: 3 -->
-      <div class="row-3">
-        <div class="polaroid p1" data-src="../../img/gyeongju/bulguksa/01.jpg"><div class="photo"><img src="../../img/gyeongju/bulguksa/01.jpg" alt=""></div></div>
-        <div class="polaroid p2" data-src="../../img/gyeongju/bulguksa/02.jpg"><div class="photo"><img src="../../img/gyeongju/bulguksa/02.jpg" alt=""></div></div>
-        <div class="polaroid p3" data-src="../../img/gyeongju/bulguksa/03.jpg"><div class="photo"><img src="../../img/gyeongju/bulguksa/03.jpg" alt=""></div></div>
-      </div>
+        <!-- Fila 1: 3 -->
+        <div class="row-3">
+          <div class="polaroid p1" data-src="../../img/gyeongju/bulguksa/01.jpg"><div class="photo"><img src="../../img/gyeongju/bulguksa/01.jpg" alt=""></div></div>
+          <div class="polaroid p2" data-src="../../img/gyeongju/bulguksa/02.jpg"><div class="photo"><img src="../../img/gyeongju/bulguksa/02.jpg" alt=""></div></div>
+          <div class="polaroid p3" data-src="../../img/gyeongju/bulguksa/03.jpg"><div class="photo"><img src="../../img/gyeongju/bulguksa/03.jpg" alt=""></div></div>
+        </div>
 
-      <!-- Fila 2: 4 -->
-      <div class="row-4">
-        <div class="polaroid p4" data-src="../../img/gyeongju/bulguksa/04.jpg"><div class="photo"><img src="../../img/gyeongju/bulguksa/04.jpg" alt=""></div></div>
-        <div class="polaroid p5" data-src="../../img/gyeongju/bulguksa/05.jpg"><div class="photo"><img src="../../img/gyeongju/bulguksa/05.jpg" alt=""></div></div>
-        <div class="polaroid p6" data-src="../../img/gyeongju/bulguksa/06.jpg"><div class="photo"><img src="../../img/gyeongju/bulguksa/06.jpg" alt=""></div></div>
-        <div class="polaroid p7" data-src="../../img/gyeongju/bulguksa/07.jpg"><div class="photo"><img src="../../img/gyeongju/bulguksa/07.jpg" alt=""></div></div>
-      </div>
+        <!-- Fila 2: 4 -->
+        <div class="row-4">
+          <div class="polaroid p4" data-src="../../img/gyeongju/bulguksa/04.jpg"><div class="photo"><img src="../../img/gyeongju/bulguksa/04.jpg" alt=""></div></div>
+          <div class="polaroid p5" data-src="../../img/gyeongju/bulguksa/05.jpg"><div class="photo"><img src="../../img/gyeongju/bulguksa/05.jpg" alt=""></div></div>
+          <div class="polaroid p6" data-src="../../img/gyeongju/bulguksa/06.jpg"><div class="photo"><img src="../../img/gyeongju/bulguksa/06.jpg" alt=""></div></div>
+          <div class="polaroid p7" data-src="../../img/gyeongju/bulguksa/07.jpg"><div class="photo"><img src="../../img/gyeongju/bulguksa/07.jpg" alt=""></div></div>
+        </div>
 
-      <!-- Fila 3: 3 -->
-      <div class="row-3">
-        <div class="polaroid p8"  data-src="../../img/gyeongju/bulguksa/08.jpg"><div class="photo"><img src="../../img/gyeongju/bulguksa/08.jpg" alt=""></div></div>
-        <div class="polaroid p9"  data-src="../../img/gyeongju/bulguksa/09.jpg"><div class="photo"><img src="../../img/gyeongju/bulguksa/09.jpg" alt=""></div></div>
-        <div class="polaroid p10" data-src="../../img/gyeongju/bulguksa/10.jpg"><div class="photo"><img src="../../img/gyeongju/bulguksa/10.jpg" alt=""></div></div>
-      </div>
+        <!-- Fila 3: 3 -->
+        <div class="row-3">
+          <div class="polaroid p8"  data-src="../../img/gyeongju/bulguksa/08.jpg"><div class="photo"><img src="../../img/gyeongju/bulguksa/08.jpg" alt=""></div></div>
+          <div class="polaroid p9"  data-src="../../img/gyeongju/bulguksa/09.jpg"><div class="photo"><img src="../../img/gyeongju/bulguksa/09.jpg" alt=""></div></div>
+          <div class="polaroid p10" data-src="../../img/gyeongju/bulguksa/10.jpg"><div class="photo"><img src="../../img/gyeongju/bulguksa/10.jpg" alt=""></div></div>
+        </div>
 
-    </section>
-  </main>
+      </section>
+    </div>
+  </div>
 
   <div class="modal" id="modal">
     <img id="modalImg" alt="">
   </div>
 
   <script>
+    // ---------- Modal ----------
     const modal = document.getElementById("modal");
     const modalImg = document.getElementById("modalImg");
 
     document.querySelectorAll(".polaroid").forEach(p => {
       p.addEventListener("click", () => {
-        modalImg.src = p.dataset.src;
+        modalImg.src = p.dataset.src || p.querySelector("img").src;
         modal.classList.add("open");
       });
     });
 
-    modal.addEventListener("click", () => {
+    function closeModal(){
       modal.classList.remove("open");
       modalImg.src = "";
+    }
+
+    modal.addEventListener("click", closeModal);
+    window.addEventListener("keydown", e => {
+      if (e.key === "Escape") closeModal();
     });
 
-    window.addEventListener("keydown", e => {
-      if(e.key === "Escape"){
-        modal.classList.remove("open");
-        modalImg.src = "";
-      }
+    // ---------- FIX: entrar centrado (patrón Beomeosa/BIFF/Dongbaekseom) ----------
+    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+
+    function clamp(v, min, max){ return Math.min(Math.max(v, min), max); }
+
+    function centerOnLayout(){
+      const vp = document.getElementById("viewport");
+      const stage = document.getElementById("stage");
+      const layout = document.getElementById("layout");
+      if (!vp || !stage || !layout) return;
+
+      const vpRect = vp.getBoundingClientRect();
+      const layoutRect = layout.getBoundingClientRect();
+
+      const layoutCx = layoutRect.left + layoutRect.width / 2;
+      const layoutCy = layoutRect.top  + layoutRect.height / 2;
+
+      const vpCx = vpRect.left + vpRect.width / 2;
+      const vpCy = vpRect.top  + vpRect.height / 2;
+
+      const dx = layoutCx - vpCx;
+      const dy = layoutCy - vpCy;
+
+      let targetX = vp.scrollLeft + dx;
+      let targetY = vp.scrollTop  + dy;
+
+      const maxX = Math.max(0, stage.scrollWidth  - vp.clientWidth);
+      const maxY = Math.max(0, stage.scrollHeight - vp.clientHeight);
+
+      vp.scrollLeft = clamp(targetX, 0, maxX);
+      vp.scrollTop  = clamp(targetY, 0, maxY);
+    }
+
+    function hardResetScroll(){
+      const vp = document.getElementById("viewport");
+      if (!vp) return;
+
+      vp.scrollTo({ left: 0, top: 0, behavior: "auto" });
+      // nudge Safari/iOS
+      vp.scrollLeft = 1; vp.scrollTop = 1;
+      vp.scrollLeft = 0; vp.scrollTop = 0;
+    }
+
+    function forceCenter(){
+      hardResetScroll();
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          centerOnLayout();
+          setTimeout(centerOnLayout, 80);
+          setTimeout(centerOnLayout, 220);
+          setTimeout(centerOnLayout, 520);
+        });
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      hardResetScroll();
+      requestAnimationFrame(centerOnLayout);
     });
+
+    window.addEventListener("load", forceCenter);
+    window.addEventListener("pageshow", () => forceCenter());
+
+    window.addEventListener("orientationchange", () => setTimeout(forceCenter, 250));
+    window.addEventListener("resize", () => setTimeout(forceCenter, 140));
   </script>
 </body>
 </html>

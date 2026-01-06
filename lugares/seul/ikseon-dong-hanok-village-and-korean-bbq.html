@@ -15,13 +15,17 @@
 
     html, body{
       margin: 0;
-      height: 100%;
+      min-height: 100%;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background: #000;
-      overflow: hidden;
+
+      /* ✅ patrón C: permitir scroll */
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
-    /* Fondos laterales */
+    /* Fondos laterales (fijos) */
     .bg-left,
     .bg-right{
       position: fixed;
@@ -70,25 +74,29 @@
       border-radius: 12px;
       font-size: 14px;
       box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+      -webkit-tap-highlight-color: transparent;
     }
 
-    /* Contenedor principal */
+    /* ✅ Contenedor scrolleable (ya no fixed) */
     .board{
-      position: fixed;
-      inset: 0;
+      position: relative;
       z-index: 5;
+      min-height: 100vh;
       display: grid;
       grid-template-columns: 50% 50%;
       align-items: center;
-      padding-top: 90px;
+
+      /* deja espacio arriba para el botón volver */
+      padding: 90px 0 80px;
       box-sizing: border-box;
     }
 
-    /* Cada mitad ocupa SU fondo */
+    /* cada mitad */
     .half{
-      height: 100%;
       display: grid;
       place-items: center;
+      padding: 0 18px;
+      box-sizing: border-box;
     }
 
     .right{
@@ -111,12 +119,15 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    .polaroid:hover{
-      transform: translateY(calc(var(--lift,0) - 2px))
-                 rotate(var(--r,0deg))
-                 scale(1.03);
-      box-shadow: 0 24px 48px rgba(0,0,0,0.6);
-      z-index: 20;
+    /* ✅ hover solo si hay hover real */
+    @media (hover:hover){
+      .polaroid:hover{
+        transform: translateY(calc(var(--lift,0) - 2px))
+                   rotate(var(--r,0deg))
+                   scale(1.03);
+        box-shadow: 0 24px 48px rgba(0,0,0,0.6);
+        z-index: 20;
+      }
     }
 
     .polaroid::before{
@@ -139,6 +150,7 @@
       border-radius: 10px;
       overflow: hidden;
       background:#eee;
+
       /* anti-blur: des-rotamos la foto */
       transform: rotate(calc(var(--r,0deg) * -1));
       transform-origin: center;
@@ -176,35 +188,24 @@
       border-radius: 16px;
     }
 
-    /* Móvil */
+    /* Móvil: una columna, mantiene los 2 fondos (se verán detrás igualmente) */
     @media (max-width: 980px){
-      html, body{ overflow-y: auto; }
-
-      .board{
-        position: relative;
-        grid-template-columns: 1fr;
-        row-gap: 36px;
-        padding: 90px 18px 60px;
-      }
-
-      .half{ height: auto; }
-
       :root{
         --polaroid-w: 220px;
         --photo-h: 155px;
         --gap-y: 28px;
       }
 
+      .board{
+        grid-template-columns: 1fr;
+        row-gap: 36px;
+        padding: 90px 18px 60px;
+      }
+
+      .half{ padding: 0; }
+
       .polaroid{ --lift:0; --r:0deg; }
       .photo{ transform:none; }
-
-      /* en móvil dejamos un solo “fondo” suave */
-      .bg-left, .bg-right{
-        width: 100%;
-        left: 0;
-        right: 0;
-        opacity: 0.35;
-      }
     }
   </style>
 </head>
@@ -262,7 +263,6 @@
       modalImg.src = "";
     }
 
-    // ✅ Usa data-src si existe; si no, cae al img.src (más robusto)
     document.querySelectorAll(".polaroid").forEach(p => {
       p.addEventListener("click", () => {
         const src = p.dataset.src || p.querySelector("img")?.src;

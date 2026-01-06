@@ -12,6 +12,7 @@
       --photo-h: 155px;
       --gap-x: 56px;
       --gap-y: 52px;
+      --center-y: 14px; /* ✅ ajuste fino: + baja, - sube */
     }
 
     html, body{
@@ -19,38 +20,14 @@
       height: 100%;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background: #000;
-
-      /* ✅ patrón C: permitir scroll */
-      overflow-x: hidden;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    /* Fondo */
-    .bg{
-      position: fixed;
-      inset: 0;
-      background: url("../../img/busan/haedong-yonggungsa-temple/01.jpg") center 45% / cover no-repeat;
-      z-index: 0;
-    }
-
-    .shade{
-      position: fixed;
-      inset: 0;
-      background: radial-gradient(
-        ellipse at center,
-        rgba(0,0,0,0.18),
-        rgba(0,0,0,0.65)
-      );
-      z-index: 1;
-      pointer-events: none;
+      overflow: hidden; /* ✅ el scroll lo hace .viewport */
     }
 
     .back{
       position: fixed;
       top: 14px;
       left: 14px;
-      z-index: 10;
+      z-index: 20;
       background: rgba(255,255,255,0.92);
       color: #000;
       text-decoration: none;
@@ -58,24 +35,46 @@
       border-radius: 12px;
       font-size: 14px;
       box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+      -webkit-tap-highlight-color: transparent;
     }
 
-    .board{
+    .viewport{
+      position: fixed;
+      inset: 0;
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      background: #000;
+
+      /* ✅ evita “anclajes”/saltos raros al cargar */
+      overflow-anchor: none;
+      scroll-behavior: auto;
+    }
+
+    .stage{
       position: relative;
-      z-index: 5;
-      min-height: 100vh;
-      display: grid;
-      place-items: start center;
-      padding: 90px 24px 70px;
-      box-sizing: border-box;
+      width: 1400px;
+      height: 900px;
+      background:
+        radial-gradient(
+          ellipse at center,
+          rgba(0,0,0,0.18),
+          rgba(0,0,0,0.70)
+        ),
+        url("../../img/busan/haedong-yonggungsa-temple/01.jpg") center 45% / cover no-repeat;
     }
 
     .layout{
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, calc(-50% + var(--center-y)));
+
       display: grid;
       grid-template-rows: auto auto;
       row-gap: var(--gap-y);
       justify-items: center;
-      width: 100%;
+      width: max-content;
     }
 
     .row.top{
@@ -84,6 +83,7 @@
       column-gap: var(--gap-x);
       justify-content: center;
       align-items: start;
+      width: max-content;
     }
 
     .row.bottom{
@@ -92,9 +92,9 @@
       column-gap: var(--gap-x);
       justify-content: center;
       align-items: start;
+      width: max-content;
     }
 
-    /* Polaroids */
     .polaroid{
       width: var(--polaroid-w);
       background: rgba(255,255,255,0.96);
@@ -104,6 +104,8 @@
       cursor: pointer;
       position: relative;
       user-select: none;
+      -webkit-tap-highlight-color: transparent;
+
       transform: translateY(var(--lift,0)) rotate(var(--r,0deg));
       transition: transform .16s ease, box-shadow .16s ease;
     }
@@ -146,17 +148,17 @@
       height: 100%;
       object-fit: cover;
       display:block;
+      user-select: none;
+      -webkit-user-drag: none;
+      pointer-events: none;
     }
 
-    /* Offsets */
     .p1{ --lift:  10px; --r:-2deg; }
     .p2{ --lift:  -6px; --r: 2deg; }
-
     .p3{ --lift:  8px;  --r:-1deg; }
     .p4{ --lift: -8px;  --r: 1deg; }
     .p5{ --lift: 12px;  --r:-2deg; }
 
-    /* Modal */
     .modal{
       position: fixed;
       inset: 0;
@@ -182,23 +184,16 @@
         --photo-h: 130px;
         --gap-x: 20px;
         --gap-y: 36px;
+        --center-y: 12px;
       }
 
-      .row.top{
-        grid-template-columns: repeat(2, var(--polaroid-w));
-        column-gap: var(--gap-x);
-        justify-content: start;
-
-        overflow-x: auto;
-        overflow-y: visible;
-        -webkit-overflow-scrolling: touch;
-        padding: 0 10px 10px;
-        scroll-snap-type: x mandatory;
+      .stage{
+        width: 1200px;
+        height: 900px;
       }
 
+      .row.top,
       .row.bottom{
-        grid-template-columns: repeat(3, var(--polaroid-w));
-        column-gap: var(--gap-x);
         justify-content: start;
 
         overflow-x: auto;
@@ -210,66 +205,129 @@
 
       .polaroid{ scroll-snap-align: center; --lift:0; --r:0deg; }
       .photo{ transform:none; }
-
-      /* opcional: si alguna fila cabe completa, la centramos visualmente */
-      @supports selector(:has(*)){
-        .row.top:not(:has(.polaroid:nth-child(3))) { justify-content: center; }
-      }
     }
   </style>
 </head>
 
 <body>
-  <div class="bg"></div>
-  <div class="shade"></div>
-
   <a class="back" href="../../busan.html">← Volver a Busan</a>
 
-  <main class="board">
-    <section class="layout">
+  <div class="viewport" id="viewport">
+    <div class="stage" id="stage">
+      <section class="layout" id="layout">
 
-      <div class="row top">
-        <div class="polaroid p1"><div class="photo"><img src="../../img/busan/haedong-yonggungsa-temple/01.jpg" alt=""></div></div>
-        <div class="polaroid p2"><div class="photo"><img src="../../img/busan/haedong-yonggungsa-temple/02.jpg" alt=""></div></div>
-      </div>
+        <div class="row top">
+          <div class="polaroid p1" data-src="../../img/busan/haedong-yonggungsa-temple/01.jpg">
+            <div class="photo"><img src="../../img/busan/haedong-yonggungsa-temple/01.jpg" alt=""></div>
+          </div>
+          <div class="polaroid p2" data-src="../../img/busan/haedong-yonggungsa-temple/02.jpg">
+            <div class="photo"><img src="../../img/busan/haedong-yonggungsa-temple/02.jpg" alt=""></div>
+          </div>
+        </div>
 
-      <div class="row bottom">
-        <div class="polaroid p3"><div class="photo"><img src="../../img/busan/haedong-yonggungsa-temple/03.jpg" alt=""></div></div>
-        <div class="polaroid p4"><div class="photo"><img src="../../img/busan/haedong-yonggungsa-temple/04.jpg" alt=""></div></div>
-        <div class="polaroid p5"><div class="photo"><img src="../../img/busan/haedong-yonggungsa-temple/05.jpg" alt=""></div></div>
-      </div>
+        <div class="row bottom">
+          <div class="polaroid p3" data-src="../../img/busan/haedong-yonggungsa-temple/03.jpg">
+            <div class="photo"><img src="../../img/busan/haedong-yonggungsa-temple/03.jpg" alt=""></div>
+          </div>
+          <div class="polaroid p4" data-src="../../img/busan/haedong-yonggungsa-temple/04.jpg">
+            <div class="photo"><img src="../../img/busan/haedong-yonggungsa-temple/04.jpg" alt=""></div>
+          </div>
+          <div class="polaroid p5" data-src="../../img/busan/haedong-yonggungsa-temple/05.jpg">
+            <div class="photo"><img src="../../img/busan/haedong-yonggungsa-temple/05.jpg" alt=""></div>
+          </div>
+        </div>
 
-    </section>
-  </main>
+      </section>
+    </div>
+  </div>
 
-  <!-- Modal -->
   <div class="modal" id="modal">
     <img id="modalImg" alt="">
   </div>
 
   <script>
+    // ---------- Modal ----------
     const modal = document.getElementById("modal");
     const modalImg = document.getElementById("modalImg");
 
     document.querySelectorAll(".polaroid").forEach(p => {
       p.addEventListener("click", () => {
-        const img = p.querySelector("img");
-        modalImg.src = img.src;
+        modalImg.src = p.dataset.src || p.querySelector("img").src;
         modal.classList.add("open");
       });
     });
 
-    modal.addEventListener("click", () => {
+    function closeModal(){
       modal.classList.remove("open");
       modalImg.src = "";
+    }
+
+    modal.addEventListener("click", closeModal);
+    window.addEventListener("keydown", e => {
+      if (e.key === "Escape") closeModal();
     });
 
-    window.addEventListener("keydown", e => {
-      if (e.key === "Escape") {
-        modal.classList.remove("open");
-        modalImg.src = "";
-      }
+    // ---------- FIX: entrar centrado (patrón Beomeosa/BIFF/Dongbaekseom) ----------
+    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+
+    function clamp(v, min, max){ return Math.min(Math.max(v, min), max); }
+
+    function centerOnLayout(){
+      const vp = document.getElementById("viewport");
+      const stage = document.getElementById("stage");
+      const layout = document.getElementById("layout");
+      if (!vp || !stage || !layout) return;
+
+      const vpRect = vp.getBoundingClientRect();
+      const layoutRect = layout.getBoundingClientRect();
+
+      const layoutCx = layoutRect.left + layoutRect.width / 2;
+      const layoutCy = layoutRect.top  + layoutRect.height / 2;
+
+      const vpCx = vpRect.left + vpRect.width / 2;
+      const vpCy = vpRect.top  + vpRect.height / 2;
+
+      const dx = layoutCx - vpCx;
+      const dy = layoutCy - vpCy;
+
+      let targetX = vp.scrollLeft + dx;
+      let targetY = vp.scrollTop  + dy;
+
+      const maxX = Math.max(0, stage.scrollWidth  - vp.clientWidth);
+      const maxY = Math.max(0, stage.scrollHeight - vp.clientHeight);
+
+      vp.scrollLeft = clamp(targetX, 0, maxX);
+      vp.scrollTop  = clamp(targetY, 0, maxY);
+    }
+
+    function hardResetScroll(){
+      const vp = document.getElementById("viewport");
+      if (!vp) return;
+      vp.scrollTo({ left: 0, top: 0, behavior: "auto" });
+    }
+
+    function forceCenter(){
+      hardResetScroll();
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          centerOnLayout();
+          setTimeout(centerOnLayout, 80);
+          setTimeout(centerOnLayout, 220);
+          setTimeout(centerOnLayout, 520);
+        });
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      hardResetScroll();
+      requestAnimationFrame(centerOnLayout);
     });
+
+    window.addEventListener("load", forceCenter);
+    window.addEventListener("pageshow", () => forceCenter());
+
+    window.addEventListener("orientationchange", () => setTimeout(forceCenter, 250));
+    window.addEventListener("resize", () => setTimeout(forceCenter, 140));
   </script>
 </body>
 </html>

@@ -11,43 +11,25 @@
       --polaroid-w: 220px;
       --photo-h: 160px;
 
-      /* Más separación */
-      --gap-x: 44px;  /* antes 28px */
-      --gap-y: 44px;  /* antes 28px */
+      --gap-x: 44px;
+      --gap-y: 44px;
+
+      --center-y: 0px; /* ✅ ajuste fino: + baja, - sube */
     }
 
-    html, body {
+    html, body{
       margin: 0;
       height: 100%;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background: #000;
-
-      /* ✅ patrón C: permitir scroll */
-      overflow-x: hidden;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
+      overflow: hidden; /* ✅ scroll lo hace .viewport */
     }
 
-    .bg {
-      position: fixed;
-      inset: 0;
-      background: url("../../img/gyeongju/lotus-garden/01.jpg") center / cover no-repeat;
-      z-index: 0;
-    }
-
-    .shade {
-      position: fixed;
-      inset: 0;
-      background: radial-gradient(ellipse at center, rgba(0,0,0,0.10), rgba(0,0,0,0.55));
-      z-index: 1;
-      pointer-events: none;
-    }
-
-    .back {
+    .back{
       position: fixed;
       top: 14px;
       left: 14px;
-      z-index: 10;
+      z-index: 20;
       background: rgba(255,255,255,0.92);
       color: #000;
       text-decoration: none;
@@ -55,29 +37,50 @@
       border-radius: 12px;
       font-size: 14px;
       box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+      -webkit-tap-highlight-color: transparent;
     }
 
-    /* ✅ ya no fixed */
-    .board {
+    .viewport{
+      position: fixed;
+      inset: 0;
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      background: #000;
+
+      overflow-anchor: none;
+      scroll-behavior: auto;
+    }
+
+    .stage{
       position: relative;
-      z-index: 5;
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      padding: 84px 18px 22px;
-      box-sizing: border-box;
+      width: 1400px;
+      height: 900px;
+      background:
+        radial-gradient(
+          ellipse at center,
+          rgba(0,0,0,0.10),
+          rgba(0,0,0,0.55)
+        ),
+        url("../../img/gyeongju/lotus-garden/01.jpg") center / cover no-repeat;
     }
 
-    .grid {
+    .grid{
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, calc(-50% + var(--center-y)));
+
       display: grid;
       grid-template-columns: repeat(3, var(--polaroid-w));
       column-gap: var(--gap-x);
       row-gap: var(--gap-y);
       align-items: center;
       justify-items: center;
+      width: max-content;
     }
 
-    .polaroid {
+    .polaroid{
       width: var(--polaroid-w);
       background: rgba(255,255,255,0.95);
       border-radius: 12px;
@@ -89,23 +92,25 @@
       user-select: none;
       -webkit-tap-highlight-color: transparent;
 
-      transform: rotate(var(--r, 0deg));
+      transform: translateY(var(--lift,0)) rotate(var(--r,0deg));
       transform-origin: center;
       transition: transform .16s ease, box-shadow .16s ease;
       will-change: transform;
     }
 
     @media (hover: hover){
-      .polaroid:hover {
-        transform: rotate(var(--r, 0deg)) translateY(-2px) scale(1.03);
+      .polaroid:hover{
+        transform: translateY(calc(var(--lift,0) - 2px))
+                   rotate(var(--r,0deg))
+                   scale(1.03);
         box-shadow: 0 18px 38px rgba(0,0,0,0.45);
         z-index: 20;
       }
     }
 
     .polaroid::before{
-      content: "";
-      position: absolute;
+      content:"";
+      position:absolute;
       top: 8px;
       left: 50%;
       transform: translateX(-50%);
@@ -116,7 +121,7 @@
       box-shadow: 0 3px 10px rgba(0,0,0,0.35);
     }
 
-    .polaroid .photo {
+    .photo{
       margin-top: 10px;
       width: 100%;
       height: var(--photo-h);
@@ -124,40 +129,39 @@
       border-radius: 8px;
       overflow: hidden;
 
-      /* 🔑 des-rotada para nitidez */
-      transform: rotate(calc(var(--r, 0deg) * -1));
+      /* ✅ des-rotada para nitidez */
+      transform: rotate(calc(var(--r,0deg) * -1));
       transform-origin: center;
     }
 
-    .polaroid img {
+    .polaroid img{
       width: 100%;
       height: 100%;
       display: block;
+      object-fit: cover;   /* ✅ base (faltaba) */
       object-position: center;
+      user-select: none;
+      -webkit-user-drag: none;
+      pointer-events: none;
     }
 
-    /* Rotaciones */
-    .p1 { --r: -3deg; }
-    .p2 { --r:  2deg; }
-    .p3 { --r:  1deg; }
-    .p4 { --r: -2deg; }
-    .p5 { --r:  3deg; }
-    .p6 { --r: -1deg; }
+    /* Rotaciones + lifts (suaves) */
+    .p1 { --r: -3deg; --lift:  8px; }
+    .p2 { --r:  2deg; --lift: -6px; }
+    .p3 { --r:  1deg; --lift: 10px; }
+    .p4 { --r: -2deg; --lift: -4px; }
+    .p5 { --r:  3deg; --lift: 12px; }
+    .p6 { --r: -1deg; --lift: -6px; }
 
-    /* 01: como las otras (rellena y enfoca) */
-    .p1 img{
-      object-fit: cover;
-      object-position: 50% 42%;
-    }
+    /* Recortes controlados (tuyos) */
+    .p1 img{ object-position: 50% 42%; }
+    .p2 img{ object-position: 50% 35%; }
+    .p3 img{ object-position: 50% 45%; }
+    .p4 img{ object-position: 55% 50%; }
+    .p5 img{ object-position: 50% 65%; }
+    .p6 img{ object-position: 50% 70%; }
 
-    /* 02–06: “enfocar” con recorte controlado */
-    .p2 img{ object-fit: cover; object-position: 50% 35%; }
-    .p3 img{ object-fit: cover; object-position: 50% 45%; }
-    .p4 img{ object-fit: cover; object-position: 55% 50%; }
-    .p5 img{ object-fit: cover; object-position: 50% 65%; }
-    .p6 img{ object-fit: cover; object-position: 50% 70%; }
-
-    .modal {
+    .modal{
       position: fixed;
       inset: 0;
       background: rgba(0,0,0,0.88);
@@ -168,9 +172,9 @@
       padding: 18px;
       box-sizing: border-box;
     }
-    .modal.open { display: flex; }
+    .modal.open{ display:flex; }
 
-    .modal img {
+    .modal img{
       max-width: min(1100px, 96vw);
       max-height: 92vh;
       object-fit: contain;
@@ -179,28 +183,23 @@
       background: rgba(255,255,255,0.04);
     }
 
-    /* ✅ móvil: mantener 3 columnas y permitir scroll horizontal */
+    /* ✅ móvil: mantener 3 columnas y permitir scroll horizontal del viewport (stage más estrecho) */
     @media (max-width: 980px){
       :root{
         --polaroid-w: 200px;
         --photo-h: 145px;
         --gap-x: 22px;
         --gap-y: 26px;
+        --center-y: 0px;
       }
 
-      .grid{
-        grid-template-columns: repeat(3, var(--polaroid-w));
-        column-gap: var(--gap-x);
-        justify-content: start;
-
-        overflow-x: auto;
-        overflow-y: visible;
-        -webkit-overflow-scrolling: touch;
-        padding: 0 10px 10px;
-        scroll-snap-type: x mandatory;
+      .stage{
+        width: 1200px;
+        height: 900px;
       }
 
-      .polaroid{ scroll-snap-align: center; }
+      .polaroid{ --lift:0; --r:0deg; }
+      .photo{ transform:none; }
     }
 
     @media (max-width: 520px){
@@ -210,50 +209,51 @@
         --gap-x: 18px;
         --gap-y: 18px;
       }
-      .board { padding-top: 78px; }
     }
   </style>
 </head>
 
 <body>
-  <div class="bg"></div>
-  <div class="shade"></div>
-
   <a class="back" href="../../gyeongju.html">← Volver a Gyeongju</a>
 
-  <main class="board">
-    <section class="grid" aria-label="Fotos Lotus Garden">
-      <div class="polaroid p1" data-src="../../img/gyeongju/lotus-garden/01.jpg">
-        <div class="photo"><img src="../../img/gyeongju/lotus-garden/01.jpg" alt="Lotus Garden 01"></div>
-      </div>
+  <div class="viewport" id="viewport">
+    <div class="stage" id="stage">
 
-      <div class="polaroid p2" data-src="../../img/gyeongju/lotus-garden/02.jpg">
-        <div class="photo"><img src="../../img/gyeongju/lotus-garden/02.jpg" alt="Lotus Garden 02"></div>
-      </div>
+      <section class="grid" id="grid" aria-label="Fotos Lotus Garden">
+        <div class="polaroid p1" data-src="../../img/gyeongju/lotus-garden/01.jpg">
+          <div class="photo"><img src="../../img/gyeongju/lotus-garden/01.jpg" alt="Lotus Garden 01"></div>
+        </div>
 
-      <div class="polaroid p3" data-src="../../img/gyeongju/lotus-garden/03.jpg">
-        <div class="photo"><img src="../../img/gyeongju/lotus-garden/03.jpg" alt="Lotus Garden 03"></div>
-      </div>
+        <div class="polaroid p2" data-src="../../img/gyeongju/lotus-garden/02.jpg">
+          <div class="photo"><img src="../../img/gyeongju/lotus-garden/02.jpg" alt="Lotus Garden 02"></div>
+        </div>
 
-      <div class="polaroid p4" data-src="../../img/gyeongju/lotus-garden/04.jpg">
-        <div class="photo"><img src="../../img/gyeongju/lotus-garden/04.jpg" alt="Lotus Garden 04"></div>
-      </div>
+        <div class="polaroid p3" data-src="../../img/gyeongju/lotus-garden/03.jpg">
+          <div class="photo"><img src="../../img/gyeongju/lotus-garden/03.jpg" alt="Lotus Garden 03"></div>
+        </div>
 
-      <div class="polaroid p5" data-src="../../img/gyeongju/lotus-garden/05.jpg">
-        <div class="photo"><img src="../../img/gyeongju/lotus-garden/05.jpg" alt="Lotus Garden 05"></div>
-      </div>
+        <div class="polaroid p4" data-src="../../img/gyeongju/lotus-garden/04.jpg">
+          <div class="photo"><img src="../../img/gyeongju/lotus-garden/04.jpg" alt="Lotus Garden 04"></div>
+        </div>
 
-      <div class="polaroid p6" data-src="../../img/gyeongju/lotus-garden/06.jpg">
-        <div class="photo"><img src="../../img/gyeongju/lotus-garden/06.jpg" alt="Lotus Garden 06"></div>
-      </div>
-    </section>
-  </main>
+        <div class="polaroid p5" data-src="../../img/gyeongju/lotus-garden/05.jpg">
+          <div class="photo"><img src="../../img/gyeongju/lotus-garden/05.jpg" alt="Lotus Garden 05"></div>
+        </div>
+
+        <div class="polaroid p6" data-src="../../img/gyeongju/lotus-garden/06.jpg">
+          <div class="photo"><img src="../../img/gyeongju/lotus-garden/06.jpg" alt="Lotus Garden 06"></div>
+        </div>
+      </section>
+
+    </div>
+  </div>
 
   <div class="modal" id="modal" aria-hidden="true">
     <img id="modalImg" alt="Foto ampliada">
   </div>
 
   <script>
+    // ---------- Modal ----------
     const modal = document.getElementById("modal");
     const modalImg = document.getElementById("modalImg");
 
@@ -280,6 +280,58 @@
     window.addEventListener("keydown", (e) => {
       if (e.key === "Escape") closeModal();
     });
+
+    // ---------- FIX: entrar centrado (patrón Beomeosa/BIFF/Dongbaekseom) ----------
+    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+
+    function clamp(v, min, max){ return Math.min(Math.max(v, min), max); }
+
+    function centerOnGrid(){
+      const vp = document.getElementById("viewport");
+      const stage = document.getElementById("stage");
+      const grid = document.getElementById("grid");
+      if (!vp || !stage || !grid) return;
+
+      const cx = grid.offsetLeft + grid.offsetWidth / 2;
+      const cy = grid.offsetTop  + grid.offsetHeight / 2;
+
+      const targetX = cx - vp.clientWidth / 2;
+      const targetY = cy - vp.clientHeight / 2;
+
+      const maxX = stage.offsetWidth  - vp.clientWidth;
+      const maxY = stage.offsetHeight - vp.clientHeight;
+
+      vp.scrollLeft = clamp(targetX, 0, Math.max(0, maxX));
+      vp.scrollTop  = clamp(targetY, 0, Math.max(0, maxY));
+    }
+
+    function hardResetScroll(){
+      const vp = document.getElementById("viewport");
+      if (!vp) return;
+
+      vp.scrollTo({ left: 0, top: 0, behavior: "auto" });
+      // “nudge” Safari/iOS
+      vp.scrollLeft = 1; vp.scrollTop = 1;
+      vp.scrollLeft = 0; vp.scrollTop = 0;
+    }
+
+    function forceCenter(){
+      hardResetScroll();
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          centerOnGrid();
+          setTimeout(centerOnGrid, 60);
+          setTimeout(centerOnGrid, 180);
+          setTimeout(centerOnGrid, 420);
+        });
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", hardResetScroll);
+    window.addEventListener("load", forceCenter);
+    window.addEventListener("pageshow", () => forceCenter());
+    window.addEventListener("orientationchange", () => setTimeout(forceCenter, 250));
+    window.addEventListener("resize", () => setTimeout(forceCenter, 120));
   </script>
 </body>
 </html>

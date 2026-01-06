@@ -2,14 +2,15 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Insa-dong Culture Street – Seúl</title>
+  <title>Hongdae – Seúl</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow">
 
   <style>
     :root{
-      --polaroid-w: 260px;
-      --photo-h: 180px;
+      --polaroid-w: 280px;
+      --photo-h: 190px;
+      --center-y: 0px;
     }
 
     html, body{
@@ -17,31 +18,14 @@
       height: 100%;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background: #000;
-      overflow: hidden;
-    }
-
-    /* Fondo */
-    .bg{
-      position: fixed;
-      inset: 0;
-      background: url("../../img/seul/insa-dong-culture-street/01.jpg") center 45% / cover no-repeat;
-      z-index: 0;
-    }
-
-    /* Velo suave */
-    .shade{
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.30);
-      z-index: 1;
-      pointer-events: none;
+      overflow: hidden; /* patrón BIFF */
     }
 
     .back{
       position: fixed;
       top: 14px;
       left: 14px;
-      z-index: 10;
+      z-index: 20;
       background: rgba(255,255,255,0.92);
       color: #000;
       text-decoration: none;
@@ -49,58 +33,79 @@
       border-radius: 12px;
       font-size: 14px;
       box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+      -webkit-tap-highlight-color: transparent;
     }
 
-    /* Contenido */
-    .board{
+    /* Viewport */
+    .viewport{
       position: fixed;
       inset: 0;
-      z-index: 5;
-      display: grid;
-      place-items: center;
-      padding-top: 95px;
-      box-sizing: border-box;
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      overflow-anchor: none;
+      background: #000;
     }
 
-    /* Polaroid única */
+    /* Stage (lienzo) */
+    .stage{
+      position: relative;
+      width: 1400px;
+      height: 950px;
+      background:
+        radial-gradient(ellipse at center, rgba(0,0,0,0.12), rgba(0,0,0,0.65)),
+        url("../../img/seul/hongdae/01.jpg") center 45% / cover no-repeat;
+    }
+
+    /* Bloque centrado */
+    .stack{
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, calc(-50% + var(--center-y)));
+      width: max-content;
+    }
+
+    /* Polaroid */
     .polaroid{
       width: var(--polaroid-w);
-      background: rgba(255,255,255,0.95);
-      border-radius: 14px;
-      padding: 14px 14px 20px;
-      box-shadow: 0 18px 36px rgba(0,0,0,0.45);
+      background: rgba(255,255,255,0.96);
+      border-radius: 12px;
+      padding: 12px 12px 18px;
+      box-shadow: 0 14px 30px rgba(0,0,0,0.35);
       cursor: pointer;
-      position: relative;
       user-select: none;
+      position: relative;
       transform: rotate(-1.5deg);
       transition: transform .16s ease, box-shadow .16s ease;
       -webkit-tap-highlight-color: transparent;
     }
 
-    .polaroid:hover{
-      transform: rotate(-1.5deg) scale(1.03);
-      box-shadow: 0 24px 48px rgba(0,0,0,0.6);
-      z-index: 20;
+    @media (hover:hover){
+      .polaroid:hover{
+        transform: rotate(0deg) scale(1.04);
+        box-shadow: 0 18px 38px rgba(0,0,0,0.45);
+      }
     }
 
     .polaroid::before{
       content:"";
       position:absolute;
-      top: 9px;
+      top: 8px;
       left: 50%;
       transform: translateX(-50%);
-      width: 15px;
-      height: 15px;
+      width: 14px;
+      height: 14px;
       border-radius: 50%;
       background: radial-gradient(circle at 30% 30%, #ff6b6b, #b30000);
       box-shadow: 0 3px 10px rgba(0,0,0,0.35);
     }
 
     .photo{
-      margin-top: 12px;
+      margin-top: 10px;
       width: 100%;
       height: var(--photo-h);
-      border-radius: 10px;
+      border-radius: 8px;
       overflow: hidden;
       background:#eee;
     }
@@ -110,51 +115,83 @@
       height: 100%;
       object-fit: cover;
       display:block;
+      pointer-events: none;
+      -webkit-user-drag: none;
+    }
+
+    /* Easter egg (parte del lienzo) */
+    .easter{
+      position: absolute;
+      right: 195px;
+      bottom: 270px;
+      width: 45px;
+      z-index: 30;
+      cursor: pointer;
+      transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+      filter: saturate(0.9);
+    }
+
+    .easter:hover{
+      transform: scale(1.12) rotate(-1deg);
+      filter: saturate(1.1) brightness(1.05);
+      box-shadow: 0 10px 26px rgba(0,0,0,0.35);
     }
 
     /* Modal */
     .modal{
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.9);
+      background: rgba(0,0,0,0.88);
       display: none;
       align-items: center;
       justify-content: center;
       z-index: 50;
       padding: 18px;
-      box-sizing: border-box;
     }
     .modal.open{ display:flex; }
     .modal img{
       max-width: 96vw;
       max-height: 92vh;
       object-fit: contain;
-      border-radius: 16px;
+      border-radius: 14px;
     }
 
     @media (max-width: 980px){
       :root{
-        --polaroid-w: 220px;
-        --photo-h: 155px;
+        --polaroid-w: 240px;
+        --photo-h: 165px;
       }
-      .polaroid{ transform:none; }
+      .stage{
+        width: 1250px;
+        height: 950px;
+      }
     }
   </style>
 </head>
 
 <body>
-  <div class="bg"></div>
-  <div class="shade"></div>
-
   <a class="back" href="../../seul.html">← Volver a Seúl</a>
 
-  <main class="board">
-    <div class="polaroid" data-src="../../img/seul/insa-dong-culture-street/01.jpg">
-      <div class="photo">
-        <img src="../../img/seul/insa-dong-culture-street/01.jpg" alt="">
+  <div class="viewport" id="viewport">
+    <div class="stage" id="stage">
+
+      <div class="stack" id="stack">
+        <div class="polaroid" data-src="../../img/seul/hongdae/01.jpg">
+          <div class="photo">
+            <img src="../../img/seul/hongdae/01.jpg" alt="Hongdae">
+          </div>
+        </div>
       </div>
+
+      <!-- Easter egg -->
+      <img class="easter"
+           src="../../img/seul/hongdae/02.png"
+           data-src="../../img/seul/hongdae/02.png"
+           alt=""
+           aria-hidden="true">
+
     </div>
-  </main>
+  </div>
 
   <!-- Modal -->
   <div class="modal" id="modal">
@@ -162,6 +199,7 @@
   </div>
 
   <script>
+    /* ---------- Modal ---------- */
     const modal = document.getElementById("modal");
     const modalImg = document.getElementById("modalImg");
 
@@ -169,23 +207,74 @@
       modalImg.src = src;
       modal.classList.add("open");
     }
-
     function closeModal(){
       modal.classList.remove("open");
       modalImg.src = "";
     }
 
-    // ✅ Más robusto: abre la imagen real del <img> (evita rutas hardcodeadas)
-    document.querySelector(".polaroid").addEventListener("click", (e) => {
-      const src = e.currentTarget.dataset.src || e.currentTarget.querySelector("img")?.src;
-      if (src) openModal(src);
+    document.querySelector(".polaroid").addEventListener("click", e => {
+      openModal(e.currentTarget.dataset.src);
+    });
+
+    document.querySelector(".easter").addEventListener("click", e => {
+      openModal(e.currentTarget.dataset.src);
     });
 
     modal.addEventListener("click", closeModal);
-
     window.addEventListener("keydown", e => {
       if (e.key === "Escape") closeModal();
     });
+
+    /* ---------- Centrando BIFF correcto ---------- */
+    if ("scrollRestoration" in history) {
+      history.scrollRestoration = "manual";
+    }
+
+    function centerOnStack(){
+      const vp = document.getElementById("viewport");
+      const stage = document.getElementById("stage");
+      const stack = document.getElementById("stack");
+      if (!vp || !stage || !stack) return;
+
+      const vpRect = vp.getBoundingClientRect();
+      const stackRect = stack.getBoundingClientRect();
+
+      const centerX = (stackRect.left - vpRect.left) + stackRect.width / 2;
+      const centerY = (stackRect.top  - vpRect.top ) + stackRect.height / 2;
+
+      const targetX = vp.scrollLeft + centerX - vp.clientWidth  / 2;
+      const targetY = vp.scrollTop  + centerY - vp.clientHeight / 2;
+
+      const maxX = stage.scrollWidth  - vp.clientWidth;
+      const maxY = stage.scrollHeight - vp.clientHeight;
+
+      vp.scrollLeft = Math.max(0, Math.min(targetX, Math.max(0, maxX)));
+      vp.scrollTop  = Math.max(0, Math.min(targetY, Math.max(0, maxY)));
+    }
+
+    function hardResetScroll(){
+      const vp = document.getElementById("viewport");
+      if (!vp) return;
+      vp.scrollTo({ left: 0, top: 0, behavior: "auto" });
+    }
+
+    function forceCenter(){
+      hardResetScroll();
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          centerOnStack();
+          setTimeout(centerOnStack, 60);
+          setTimeout(centerOnStack, 180);
+          setTimeout(centerOnStack, 420);
+        });
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", hardResetScroll);
+    window.addEventListener("load", forceCenter);
+    window.addEventListener("pageshow", forceCenter);
+    window.addEventListener("orientationchange", () => setTimeout(forceCenter, 250));
+    window.addEventListener("resize", () => setTimeout(forceCenter, 120));
   </script>
 </body>
 </html>

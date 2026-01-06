@@ -18,7 +18,11 @@
       height: 100%;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background: #000;
-      overflow: hidden;
+
+      /* ✅ patrón C: permitir scroll */
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     /* Fondo */
@@ -53,25 +57,29 @@
       border-radius: 12px;
       font-size: 14px;
       box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+      -webkit-tap-highlight-color: transparent;
     }
 
+    /* ✅ ya no fixed: permite crecer y hacer scroll */
     .board{
-      position: fixed;
-      inset: 0;
+      position: relative;
       z-index: 5;
+      min-height: 100vh;
       display: grid;
       place-items: center;
-      padding-top: 95px;
+      padding: 95px 18px 70px;
       box-sizing: border-box;
     }
 
-    /* Fila única */
+    /* Fila única (4) */
     .row{
       display: grid;
       grid-template-columns: repeat(4, var(--polaroid-w));
       column-gap: var(--gap-x);
       justify-content: center;
       align-items: start;
+      width: 100%;
+      box-sizing: border-box;
     }
 
     /* Polaroids */
@@ -91,12 +99,14 @@
       will-change: transform;
     }
 
-    .polaroid:hover{
-      transform: translateY(calc(var(--lift,0) - 2px))
-                 rotate(var(--r,0deg))
-                 scale(1.03);
-      box-shadow: 0 18px 38px rgba(0,0,0,0.45);
-      z-index: 20;
+    @media (hover: hover){
+      .polaroid:hover{
+        transform: translateY(calc(var(--lift,0) - 2px))
+                   rotate(var(--r,0deg))
+                   scale(1.03);
+        box-shadow: 0 18px 38px rgba(0,0,0,0.45);
+        z-index: 20;
+      }
     }
 
     .polaroid::before{
@@ -112,7 +122,7 @@
       box-shadow: 0 3px 10px rgba(0,0,0,0.35);
     }
 
-    /* 🔑 Foto des-rotada para que no se vea borrosa */
+    /* 🔑 Foto des-rotada para nitidez */
     .photo{
       margin-top: 10px;
       width: 100%;
@@ -158,28 +168,37 @@
       border-radius: 14px;
     }
 
-    /* Responsive */
-    @media (max-width: 1100px){
+    /* ✅ móvil: mantener 4 columnas y permitir scroll horizontal (NO reflow a 2/1) */
+    @media (max-width: 980px){
       :root{
         --polaroid-w: 190px;
         --photo-h: 135px;
-        --gap-x: 28px;
+        --gap-x: 18px;
       }
+
       .row{
-        grid-template-columns: repeat(2, var(--polaroid-w));
-        row-gap: 32px;
+        grid-template-columns: repeat(4, var(--polaroid-w));
+        column-gap: var(--gap-x);
+        justify-content: start;
+
+        overflow-x: auto;
+        overflow-y: visible;
+        -webkit-overflow-scrolling: touch;
+        padding: 0 10px 10px;
+        scroll-snap-type: x mandatory;
       }
-      .polaroid{ --lift:0; --r:0deg; }
+
+      .polaroid{ scroll-snap-align: center; --lift:0; --r:0deg; }
       .photo{ transform:none; }
     }
 
-    @media (max-width: 600px){
-      .row{
-        grid-template-columns: 1fr;
-        row-gap: 28px;
+    @media (max-width: 520px){
+      :root{
+        --polaroid-w: 170px;
+        --photo-h: 120px;
+        --gap-x: 16px;
       }
-      .polaroid{ --lift:0; --r:0deg; }
-      .photo{ transform:none; }
+      .board{ padding-top: 78px; }
     }
   </style>
 </head>
@@ -192,10 +211,21 @@
 
   <main class="board">
     <div class="row">
-      <div class="polaroid p1" data-src="../../img/seul/lotte-world-tower/01.bmp"><div class="photo"><img src="../../img/seul/lotte-world-tower/01.bmp" alt=""></div></div>
-      <div class="polaroid p2" data-src="../../img/seul/lotte-world-tower/02.jpg"><div class="photo"><img src="../../img/seul/lotte-world-tower/02.jpg" alt=""></div></div>
-      <div class="polaroid p3" data-src="../../img/seul/lotte-world-tower/03.jpg"><div class="photo"><img src="../../img/seul/lotte-world-tower/03.jpg" alt=""></div></div>
-      <div class="polaroid p4" data-src="../../img/seul/lotte-world-tower/04.jpg"><div class="photo"><img src="../../img/seul/lotte-world-tower/04.jpg" alt=""></div></div>
+      <div class="polaroid p1" data-src="../../img/seul/lotte-world-tower/01.bmp">
+        <div class="photo"><img src="../../img/seul/lotte-world-tower/01.bmp" alt=""></div>
+      </div>
+
+      <div class="polaroid p2" data-src="../../img/seul/lotte-world-tower/02.jpg">
+        <div class="photo"><img src="../../img/seul/lotte-world-tower/02.jpg" alt=""></div>
+      </div>
+
+      <div class="polaroid p3" data-src="../../img/seul/lotte-world-tower/03.jpg">
+        <div class="photo"><img src="../../img/seul/lotte-world-tower/03.jpg" alt=""></div>
+      </div>
+
+      <div class="polaroid p4" data-src="../../img/seul/lotte-world-tower/04.jpg">
+        <div class="photo"><img src="../../img/seul/lotte-world-tower/04.jpg" alt=""></div>
+      </div>
     </div>
   </main>
 
@@ -218,7 +248,8 @@
 
     document.querySelectorAll(".polaroid").forEach(card => {
       card.addEventListener("click", () => {
-        openModal(card.dataset.src || card.querySelector("img")?.src);
+        const src = card.dataset.src || card.querySelector("img")?.src;
+        if (src) openModal(src);
       });
     });
 
