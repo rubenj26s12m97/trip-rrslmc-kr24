@@ -12,7 +12,7 @@
       --photo-h: 150px;
       --gap-x: 48px;
       --gap-y: 56px;
-      --center-y: 14px; /* ✅ ajuste fino: + baja, - sube */
+      --center-y: 14px;
     }
 
     html, body{
@@ -20,7 +20,7 @@
       height: 100%;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background: #000;
-      overflow: hidden; /* ✅ el scroll lo hace .viewport */
+      overflow: hidden;
     }
 
     .back{
@@ -45,8 +45,6 @@
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain;
       background: #000;
-
-      /* ✅ evita “anclajes” raros de scroll al cargar */
       overflow-anchor: none;
       scroll-behavior: auto;
     }
@@ -55,16 +53,17 @@
       position: relative;
       width: 1400px;
       height: 900px;
+      overflow: visible;
       background:
         radial-gradient(
           ellipse at center,
           rgba(0,0,0,0.15),
           rgba(0,0,0,0.70)
         ),
-        url("../../img/busan/gamcheon-culture-village/01.jpg") center 45% / cover no-repeat;
+        url("../../img/busan/gamcheon-culture-village/01.jpg")
+        center 45% / cover no-repeat;
     }
 
-    /* Layout centrado (2 filas de 3) */
     .layout{
       position: absolute;
       left: 50%;
@@ -85,6 +84,7 @@
       justify-content: center;
       align-items: start;
       width: max-content;
+      overflow: visible;
     }
 
     .polaroid{
@@ -97,7 +97,6 @@
       position: relative;
       user-select: none;
       -webkit-tap-highlight-color: transparent;
-
       transform: translateY(var(--lift,0)) rotate(var(--r,0deg));
       transition: transform .16s ease, box-shadow .16s ease;
     }
@@ -145,7 +144,6 @@
       pointer-events: none;
     }
 
-    /* Offsets */
     .p1{ --lift:  8px;  --r:-2deg; }
     .p2{ --lift: -6px;  --r: 2deg; }
     .p3{ --lift: 12px;  --r:-1deg; }
@@ -153,7 +151,6 @@
     .p5{ --lift: 10px;  --r:-2deg; }
     .p6{ --lift: -8px;  --r: 2deg; }
 
-    /* Modal */
     .modal{
       position: fixed;
       inset: 0;
@@ -172,12 +169,12 @@
       border-radius: 14px;
     }
 
-    /* ✅ móvil: mantener 3 por fila, permitir scroll horizontal de cada fila */
+    /* ✅ móvil: MISMO PATRÓN, sin scroll por fila */
     @media (max-width: 980px){
       :root{
         --polaroid-w: 180px;
         --photo-h: 130px;
-        --gap-x: 22px;
+        --gap-x: 32px;
         --gap-y: 36px;
         --center-y: 12px;
       }
@@ -187,19 +184,7 @@
         height: 900px;
       }
 
-      .row{
-        grid-template-columns: repeat(3, var(--polaroid-w));
-        column-gap: var(--gap-x);
-        justify-content: start;
-
-        overflow-x: auto;
-        overflow-y: visible;
-        -webkit-overflow-scrolling: touch;
-        padding: 0 10px 10px;
-        scroll-snap-type: x mandatory;
-      }
-
-      .polaroid{ scroll-snap-align: center; --lift:0; --r:0deg; }
+      .polaroid{ --lift:0; --r:0deg; }
       .photo{ transform:none; }
     }
   </style>
@@ -211,39 +196,40 @@
   <div class="viewport" id="viewport">
     <div class="stage" id="stage">
       <section class="layout" id="layout">
+
         <div class="row">
           <div class="polaroid p1" data-src="../../img/busan/gamcheon-culture-village/02.jpg">
-            <div class="photo"><img src="../../img/busan/gamcheon-culture-village/02.jpg" alt=""></div>
+            <div class="photo"><img src="../../img/busan/gamcheon-culture-village/02.jpg"></div>
           </div>
           <div class="polaroid p2" data-src="../../img/busan/gamcheon-culture-village/03.jpg">
-            <div class="photo"><img src="../../img/busan/gamcheon-culture-village/03.jpg" alt=""></div>
+            <div class="photo"><img src="../../img/busan/gamcheon-culture-village/03.jpg"></div>
           </div>
           <div class="polaroid p3" data-src="../../img/busan/gamcheon-culture-village/04.jpg">
-            <div class="photo"><img src="../../img/busan/gamcheon-culture-village/04.jpg" alt=""></div>
+            <div class="photo"><img src="../../img/busan/gamcheon-culture-village/04.jpg"></div>
           </div>
         </div>
 
         <div class="row">
           <div class="polaroid p4" data-src="../../img/busan/gamcheon-culture-village/05.jpg">
-            <div class="photo"><img src="../../img/busan/gamcheon-culture-village/05.jpg" alt=""></div>
+            <div class="photo"><img src="../../img/busan/gamcheon-culture-village/05.jpg"></div>
           </div>
           <div class="polaroid p5" data-src="../../img/busan/gamcheon-culture-village/06.jpg">
-            <div class="photo"><img src="../../img/busan/gamcheon-culture-village/06.jpg" alt=""></div>
+            <div class="photo"><img src="../../img/busan/gamcheon-culture-village/06.jpg"></div>
           </div>
           <div class="polaroid p6" data-src="../../img/busan/gamcheon-culture-village/07.jpg">
-            <div class="photo"><img src="../../img/busan/gamcheon-culture-village/07.jpg" alt=""></div>
+            <div class="photo"><img src="../../img/busan/gamcheon-culture-village/07.jpg"></div>
           </div>
         </div>
+
       </section>
     </div>
   </div>
 
   <div class="modal" id="modal">
-    <img id="modalImg" alt="">
+    <img id="modalImg">
   </div>
 
   <script>
-    // ---------- Modal ----------
     const modal = document.getElementById("modal");
     const modalImg = document.getElementById("modalImg");
 
@@ -264,67 +250,41 @@
       if(e.key === "Escape") closeModal();
     });
 
-    // ---------- FIX: entrar centrado (patrón Beomeosa/BIFF/Dongbaekseom) ----------
     if ("scrollRestoration" in history) history.scrollRestoration = "manual";
 
-    function clamp(v, min, max){ return Math.min(Math.max(v, min), max); }
+    function clamp(v,min,max){ return Math.min(Math.max(v,min),max); }
 
     function centerOnLayout(){
-      const vp = document.getElementById("viewport");
-      const stage = document.getElementById("stage");
-      const layout = document.getElementById("layout");
+      const vp = viewport, stage = document.getElementById("stage"),
+            layout = document.getElementById("layout");
       if (!vp || !stage || !layout) return;
 
       const vpRect = vp.getBoundingClientRect();
-      const layoutRect = layout.getBoundingClientRect();
+      const lRect  = layout.getBoundingClientRect();
 
-      const layoutCx = layoutRect.left + layoutRect.width / 2;
-      const layoutCy = layoutRect.top  + layoutRect.height / 2;
+      const dx = (lRect.left + lRect.width/2)  - (vpRect.left + vpRect.width/2);
+      const dy = (lRect.top  + lRect.height/2) - (vpRect.top  + vpRect.height/2);
 
-      const vpCx = vpRect.left + vpRect.width / 2;
-      const vpCy = vpRect.top  + vpRect.height / 2;
-
-      const dx = layoutCx - vpCx;
-      const dy = layoutCy - vpCy;
-
-      let targetX = vp.scrollLeft + dx;
-      let targetY = vp.scrollTop  + dy;
-
-      const maxX = Math.max(0, stage.scrollWidth  - vp.clientWidth);
-      const maxY = Math.max(0, stage.scrollHeight - vp.clientHeight);
-
-      vp.scrollLeft = clamp(targetX, 0, maxX);
-      vp.scrollTop  = clamp(targetY, 0, maxY);
-    }
-
-    function hardResetScroll(){
-      const vp = document.getElementById("viewport");
-      if (!vp) return;
-      vp.scrollTo({ left: 0, top: 0, behavior: "auto" });
+      vp.scrollLeft = clamp(vp.scrollLeft + dx, 0, stage.scrollWidth  - vp.clientWidth);
+      vp.scrollTop  = clamp(vp.scrollTop  + dy, 0, stage.scrollHeight - vp.clientHeight);
     }
 
     function forceCenter(){
-      hardResetScroll();
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
+      viewport.scrollTo({left:0, top:0, behavior:"auto"});
+      requestAnimationFrame(()=>{
+        requestAnimationFrame(()=>{
           centerOnLayout();
-          setTimeout(centerOnLayout, 80);
-          setTimeout(centerOnLayout, 220);
-          setTimeout(centerOnLayout, 520);
+          setTimeout(centerOnLayout,80);
+          setTimeout(centerOnLayout,220);
+          setTimeout(centerOnLayout,520);
         });
       });
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
-      hardResetScroll();
-      requestAnimationFrame(centerOnLayout);
-    });
-
+    document.addEventListener("DOMContentLoaded", forceCenter);
     window.addEventListener("load", forceCenter);
-    window.addEventListener("pageshow", () => forceCenter());
-
-    window.addEventListener("orientationchange", () => setTimeout(forceCenter, 250));
-    window.addEventListener("resize", () => setTimeout(forceCenter, 140));
+    window.addEventListener("resize", ()=>setTimeout(forceCenter,140));
+    window.addEventListener("orientationchange", ()=>setTimeout(forceCenter,250));
   </script>
 </body>
 </html>
