@@ -8,11 +8,14 @@
 
   <style>
     :root{
-      --polaroid-w: 210px;
-      --photo-h: 150px;
-      --gap-x: 48px;
-      --gap-y: 56px;
-      --center-y: 14px;
+      --polaroid-w: 220px;
+      --photo-h: 155px;
+
+      /* ✅ más aire real */
+      --gap-x: 82px;
+      --gap-y: 78px;
+
+      --center-y: 20px;
     }
 
     html, body{
@@ -35,7 +38,6 @@
       border-radius: 12px;
       font-size: 14px;
       box-shadow: 0 8px 18px rgba(0,0,0,0.25);
-      -webkit-tap-highlight-color: transparent;
     }
 
     .viewport{
@@ -44,21 +46,19 @@
       overflow: auto;
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain;
-      background: #000;
       overflow-anchor: none;
-      scroll-behavior: auto;
     }
 
     .stage{
       position: relative;
-      width: 1400px;
-      height: 900px;
+      width: 1500px;
+      height: 980px;
       overflow: visible;
       background:
         radial-gradient(
           ellipse at center,
           rgba(0,0,0,0.15),
-          rgba(0,0,0,0.70)
+          rgba(0,0,0,0.72)
         ),
         url("../../img/busan/gamcheon-culture-village/01.jpg")
         center 45% / cover no-repeat;
@@ -81,10 +81,7 @@
       display: grid;
       grid-template-columns: repeat(3, var(--polaroid-w));
       column-gap: var(--gap-x);
-      justify-content: center;
-      align-items: start;
       width: max-content;
-      overflow: visible;
     }
 
     .polaroid{
@@ -96,17 +93,24 @@
       cursor: pointer;
       position: relative;
       user-select: none;
-      -webkit-tap-highlight-color: transparent;
-      transform: translateY(var(--lift,0)) rotate(var(--r,0deg));
-      transition: transform .16s ease, box-shadow .16s ease;
+
+      /* ✅ desorden controlado */
+      transform:
+        translateX(var(--tx,0))
+        translateY(var(--ty,0))
+        rotate(var(--r,0deg));
+
+      transition: transform .18s ease, box-shadow .18s ease;
     }
 
-    @media (hover: hover){
+    @media (hover:hover){
       .polaroid:hover{
-        transform: translateY(calc(var(--lift,0) - 2px))
-                   rotate(var(--r,0deg))
-                   scale(1.03);
-        box-shadow: 0 18px 38px rgba(0,0,0,0.45);
+        transform:
+          translateX(var(--tx,0))
+          translateY(calc(var(--ty,0) - 4px))
+          rotate(var(--r,0deg))
+          scale(1.04);
+        box-shadow: 0 20px 42px rgba(0,0,0,0.45);
         z-index: 20;
       }
     }
@@ -139,17 +143,17 @@
       height: 100%;
       object-fit: cover;
       display:block;
-      user-select: none;
-      -webkit-user-drag: none;
       pointer-events: none;
     }
 
-    .p1{ --lift:  8px;  --r:-2deg; }
-    .p2{ --lift: -6px;  --r: 2deg; }
-    .p3{ --lift: 12px;  --r:-1deg; }
-    .p4{ --lift: -4px;  --r: 1deg; }
-    .p5{ --lift: 10px;  --r:-2deg; }
-    .p6{ --lift: -8px;  --r: 2deg; }
+    /* ---------- offsets individuales ---------- */
+    .p1{ --r:-2.5deg; --tx:-6px;  --ty: 10px; }
+    .p2{ --r: 1.8deg; --tx: 4px;  --ty:-6px; }
+    .p3{ --r:-1.2deg; --tx: 8px;  --ty: 14px; }
+
+    .p4{ --r: 2.2deg; --tx:-10px; --ty:-4px; }
+    .p5{ --r:-1.6deg; --tx: 6px;  --ty: 8px; }
+    .p6{ --r: 1.4deg; --tx:-4px;  --ty:-10px; }
 
     .modal{
       position: fixed;
@@ -165,18 +169,17 @@
     .modal img{
       max-width: 96vw;
       max-height: 92vh;
-      object-fit: contain;
       border-radius: 14px;
     }
 
-    /* ✅ móvil: MISMO PATRÓN, sin scroll por fila */
+    /* ---------- móvil: mismo patrón, menos ruido ---------- */
     @media (max-width: 980px){
       :root{
-        --polaroid-w: 180px;
-        --photo-h: 130px;
-        --gap-x: 32px;
-        --gap-y: 36px;
-        --center-y: 12px;
+        --polaroid-w: 185px;
+        --photo-h: 135px;
+        --gap-x: 56px;
+        --gap-y: 48px;
+        --center-y: 10px;
       }
 
       .stage{
@@ -184,107 +187,105 @@
         height: 900px;
       }
 
-      .polaroid{ --lift:0; --r:0deg; }
+      .polaroid{
+        --tx: 0;
+        --ty: 0;
+        --r: 0deg;
+      }
       .photo{ transform:none; }
     }
   </style>
 </head>
 
 <body>
-  <a class="back" href="../../busan.html">← Volver a Busan</a>
+<a class="back" href="../../busan.html">← Volver a Busan</a>
 
-  <div class="viewport" id="viewport">
-    <div class="stage" id="stage">
-      <section class="layout" id="layout">
+<div class="viewport" id="viewport">
+  <div class="stage" id="stage">
+    <section class="layout" id="layout">
 
-        <div class="row">
-          <div class="polaroid p1" data-src="../../img/busan/gamcheon-culture-village/02.jpg">
-            <div class="photo"><img src="../../img/busan/gamcheon-culture-village/02.jpg"></div>
-          </div>
-          <div class="polaroid p2" data-src="../../img/busan/gamcheon-culture-village/03.jpg">
-            <div class="photo"><img src="../../img/busan/gamcheon-culture-village/03.jpg"></div>
-          </div>
-          <div class="polaroid p3" data-src="../../img/busan/gamcheon-culture-village/04.jpg">
-            <div class="photo"><img src="../../img/busan/gamcheon-culture-village/04.jpg"></div>
-          </div>
+      <div class="row">
+        <div class="polaroid p1" data-src="../../img/busan/gamcheon-culture-village/02.jpg">
+          <div class="photo"><img src="../../img/busan/gamcheon-culture-village/02.jpg"></div>
         </div>
-
-        <div class="row">
-          <div class="polaroid p4" data-src="../../img/busan/gamcheon-culture-village/05.jpg">
-            <div class="photo"><img src="../../img/busan/gamcheon-culture-village/05.jpg"></div>
-          </div>
-          <div class="polaroid p5" data-src="../../img/busan/gamcheon-culture-village/06.jpg">
-            <div class="photo"><img src="../../img/busan/gamcheon-culture-village/06.jpg"></div>
-          </div>
-          <div class="polaroid p6" data-src="../../img/busan/gamcheon-culture-village/07.jpg">
-            <div class="photo"><img src="../../img/busan/gamcheon-culture-village/07.jpg"></div>
-          </div>
+        <div class="polaroid p2" data-src="../../img/busan/gamcheon-culture-village/03.jpg">
+          <div class="photo"><img src="../../img/busan/gamcheon-culture-village/03.jpg"></div>
         </div>
+        <div class="polaroid p3" data-src="../../img/busan/gamcheon-culture-village/04.jpg">
+          <div class="photo"><img src="../../img/busan/gamcheon-culture-village/04.jpg"></div>
+        </div>
+      </div>
 
-      </section>
-    </div>
+      <div class="row">
+        <div class="polaroid p4" data-src="../../img/busan/gamcheon-culture-village/05.jpg">
+          <div class="photo"><img src="../../img/busan/gamcheon-culture-village/05.jpg"></div>
+        </div>
+        <div class="polaroid p5" data-src="../../img/busan/gamcheon-culture-village/06.jpg">
+          <div class="photo"><img src="../../img/busan/gamcheon-culture-village/06.jpg"></div>
+        </div>
+        <div class="polaroid p6" data-src="../../img/busan/gamcheon-culture-village/07.jpg">
+          <div class="photo"><img src="../../img/busan/gamcheon-culture-village/07.jpg"></div>
+        </div>
+      </div>
+
+    </section>
   </div>
+</div>
 
-  <div class="modal" id="modal">
-    <img id="modalImg">
-  </div>
+<div class="modal" id="modal">
+  <img id="modalImg">
+</div>
 
-  <script>
-    const modal = document.getElementById("modal");
-    const modalImg = document.getElementById("modalImg");
+<script>
+  const modal = document.getElementById("modal");
+  const modalImg = document.getElementById("modalImg");
 
-    document.querySelectorAll(".polaroid").forEach(p=>{
-      p.addEventListener("click", ()=>{
-        modalImg.src = p.dataset.src;
-        modal.classList.add("open");
-      });
+  document.querySelectorAll(".polaroid").forEach(p=>{
+    p.addEventListener("click", ()=>{
+      modalImg.src = p.dataset.src;
+      modal.classList.add("open");
     });
+  });
 
-    function closeModal(){
-      modal.classList.remove("open");
-      modalImg.src = "";
-    }
+  modal.addEventListener("click", ()=>{
+    modal.classList.remove("open");
+    modalImg.src = "";
+  });
 
-    modal.addEventListener("click", closeModal);
-    window.addEventListener("keydown", e=>{
-      if(e.key === "Escape") closeModal();
-    });
+  if ("scrollRestoration" in history) history.scrollRestoration = "manual";
 
-    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+  function clamp(v,min,max){ return Math.min(Math.max(v,min),max); }
 
-    function clamp(v,min,max){ return Math.min(Math.max(v,min),max); }
+  function centerOnLayout(){
+    const vp = viewport;
+    const stage = document.getElementById("stage");
+    const layout = document.getElementById("layout");
 
-    function centerOnLayout(){
-      const vp = viewport, stage = document.getElementById("stage"),
-            layout = document.getElementById("layout");
-      if (!vp || !stage || !layout) return;
+    const vpR = vp.getBoundingClientRect();
+    const lR  = layout.getBoundingClientRect();
 
-      const vpRect = vp.getBoundingClientRect();
-      const lRect  = layout.getBoundingClientRect();
+    const dx = (lR.left + lR.width/2)  - (vpR.left + vpR.width/2);
+    const dy = (lR.top  + lR.height/2) - (vpR.top  + vpR.height/2);
 
-      const dx = (lRect.left + lRect.width/2)  - (vpRect.left + vpRect.width/2);
-      const dy = (lRect.top  + lRect.height/2) - (vpRect.top  + vpRect.height/2);
+    vp.scrollLeft = clamp(vp.scrollLeft + dx, 0, stage.scrollWidth  - vp.clientWidth);
+    vp.scrollTop  = clamp(vp.scrollTop  + dy, 0, stage.scrollHeight - vp.clientHeight);
+  }
 
-      vp.scrollLeft = clamp(vp.scrollLeft + dx, 0, stage.scrollWidth  - vp.clientWidth);
-      vp.scrollTop  = clamp(vp.scrollTop  + dy, 0, stage.scrollHeight - vp.clientHeight);
-    }
-
-    function forceCenter(){
-      viewport.scrollTo({left:0, top:0, behavior:"auto"});
+  function forceCenter(){
+    viewport.scrollTo({left:0, top:0, behavior:"auto"});
+    requestAnimationFrame(()=>{
       requestAnimationFrame(()=>{
-        requestAnimationFrame(()=>{
-          centerOnLayout();
-          setTimeout(centerOnLayout,80);
-          setTimeout(centerOnLayout,220);
-          setTimeout(centerOnLayout,520);
-        });
+        centerOnLayout();
+        setTimeout(centerOnLayout,80);
+        setTimeout(centerOnLayout,220);
+        setTimeout(centerOnLayout,520);
       });
-    }
+    });
+  }
 
-    document.addEventListener("DOMContentLoaded", forceCenter);
-    window.addEventListener("load", forceCenter);
-    window.addEventListener("resize", ()=>setTimeout(forceCenter,140));
-    window.addEventListener("orientationchange", ()=>setTimeout(forceCenter,250));
-  </script>
+  window.addEventListener("load", forceCenter);
+  window.addEventListener("resize", ()=>setTimeout(forceCenter,140));
+  window.addEventListener("orientationchange", ()=>setTimeout(forceCenter,250));
+</script>
 </body>
 </html>
