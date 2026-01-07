@@ -8,11 +8,14 @@
 
   <style>
     :root{
-      --polaroid-w: 220px;
-      --photo-h: 165px;
-      --gap-x: 48px;
-      --gap-y: 56px;
-      --center-y: 14px; /* ✅ ajuste fino: + baja, - sube */
+      --polaroid-w: 225px;
+      --photo-h: 168px;
+
+      /* ✅ más aire real (evita simetría “grid”) */
+      --gap-x: 86px;
+      --gap-y: 78px;
+
+      --center-y: 18px;
     }
 
     html, body{
@@ -20,7 +23,7 @@
       height: 100%;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background: #000;
-      overflow: hidden; /* ✅ el scroll lo hace .viewport */
+      overflow: hidden;
     }
 
     .back{
@@ -45,21 +48,20 @@
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain;
       background: #000;
-
-      /* ✅ evita “anclajes”/saltos raros al cargar */
       overflow-anchor: none;
       scroll-behavior: auto;
     }
 
     .stage{
       position: relative;
-      width: 1400px;
-      height: 900px;
+      width: 1500px;
+      height: 980px;
+      overflow: visible;
       background:
         radial-gradient(
           ellipse at center,
           rgba(0,0,0,0.12),
-          rgba(0,0,0,0.60)
+          rgba(0,0,0,0.62)
         ),
         url("../../img/busan/haeundae-beach-busan-x-the-sky-and-sky-capsule/01.jpg") center 45% / cover no-repeat;
     }
@@ -84,6 +86,9 @@
       justify-content: center;
       align-items: start;
       width: max-content;
+
+      /* ✅ nunca scroll aquí */
+      overflow: visible;
     }
 
     .polaroid{
@@ -97,15 +102,22 @@
       user-select: none;
       -webkit-tap-highlight-color: transparent;
 
-      transform: translateY(var(--lift,0)) rotate(var(--r,0deg));
+      /* ✅ “corcho” */
+      transform:
+        translateX(var(--tx,0))
+        translateY(var(--ty,0))
+        rotate(var(--r,0deg));
+
       transition: transform .16s ease, box-shadow .16s ease;
     }
 
     @media (hover: hover){
       .polaroid:hover{
-        transform: translateY(calc(var(--lift,0) - 2px))
-                   rotate(var(--r,0deg))
-                   scale(1.03);
+        transform:
+          translateX(var(--tx,0))
+          translateY(calc(var(--ty,0) - 4px))
+          rotate(var(--r,0deg))
+          scale(1.04);
         box-shadow: 0 18px 38px rgba(0,0,0,0.45);
         z-index: 20;
       }
@@ -144,12 +156,13 @@
       pointer-events: none;
     }
 
-    .p1{ --lift:  8px;  --r:-2deg; }
-    .p2{ --lift: -6px;  --r: 2deg; }
-    .p3{ --lift: 12px;  --r:-1deg; }
-    .p4{ --lift: -4px;  --r: 1deg; }
-    .p5{ --lift: 10px;  --r:-2deg; }
-    .p6{ --lift: -8px;  --r: 2deg; }
+    /* ✅ desktop: un poco más marcado */
+    .p1{ --r:-3.0deg; --tx:-10px; --ty: 14px; }
+    .p2{ --r: 2.6deg; --tx:  8px; --ty:-10px; }
+    .p3{ --r:-2.0deg; --tx: 10px; --ty: 18px; }
+    .p4{ --r: 2.2deg; --tx:-12px; --ty:-8px; }
+    .p5{ --r:-3.2deg; --tx:  6px; --ty: 10px; }
+    .p6{ --r: 2.8deg; --tx: -6px; --ty:-14px; }
 
     .modal{
       position: fixed;
@@ -169,13 +182,16 @@
       border-radius: 14px;
     }
 
-    /* ✅ móvil: mantener 3 por fila y permitir scroll horizontal por fila */
+    /* ✅ móvil PRIORIDAD: sin scroll por fila + “corcho” suave */
     @media (max-width: 980px){
       :root{
-        --polaroid-w: 185px;
-        --photo-h: 135px;
-        --gap-x: 20px;
-        --gap-y: 36px;
+        --polaroid-w: 190px;
+        --photo-h: 140px;
+
+        /* aire suficiente sin que “explote” */
+        --gap-x: 58px;
+        --gap-y: 50px;
+
         --center-y: 12px;
       }
 
@@ -184,18 +200,15 @@
         height: 900px;
       }
 
-      .row{
-        justify-content: start;
+      /* “corcho” suave en móvil (no queda todo a la misma altura) */
+      .p1{ --r:-1.1deg; --tx:-4px; --ty:  8px; }
+      .p2{ --r: 0.9deg; --tx:  3px; --ty: -6px; }
+      .p3{ --r:-0.8deg; --tx:  5px; --ty: 10px; }
+      .p4{ --r: 1.0deg; --tx:-5px; --ty: -4px; }
+      .p5{ --r:-1.2deg; --tx:  2px; --ty:  6px; }
+      .p6{ --r: 0.8deg; --tx:-3px; --ty: -8px; }
 
-        overflow-x: auto;
-        overflow-y: visible;
-        -webkit-overflow-scrolling: touch;
-        padding: 0 10px 10px;
-        scroll-snap-type: x mandatory;
-      }
-
-      .polaroid{ scroll-snap-align: center; --lift:0; --r:0deg; }
-      .photo{ transform:none; }
+      .photo{ transform:none; } /* en móvil mejor foto “recta” */
     }
   </style>
 </head>
@@ -261,7 +274,7 @@
       if (e.key === "Escape") closeModal();
     });
 
-    // ---------- FIX: entrar centrado (patrón Beomeosa/BIFF/Dongbaekseom) ----------
+    // ---------- FIX: entrar centrado ----------
     if ("scrollRestoration" in history) history.scrollRestoration = "manual";
 
     function clamp(v, min, max){ return Math.min(Math.max(v, min), max); }
