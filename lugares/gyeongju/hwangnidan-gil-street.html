@@ -8,11 +8,14 @@
 
   <style>
     :root{
-      --polaroid-w: 215px;
-      --photo-h: 155px;
-      --gap-x: 64px;
-      --gap-y: 46px;
-      --center-y: 0px; /* ✅ ajuste fino */
+      --polaroid-w: 220px;
+      --photo-h: 156px;
+
+      /* ✅ más aire */
+      --gap-x: 72px;
+      --gap-y: 62px;
+
+      --center-y: 0px;
     }
 
     html, body{
@@ -20,7 +23,7 @@
       height: 100%;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background: #000;
-      overflow: hidden; /* ✅ el scroll lo hace .viewport */
+      overflow: hidden;
     }
 
     .back{
@@ -45,15 +48,15 @@
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain;
       background: #000;
-
       overflow-anchor: none;
       scroll-behavior: auto;
     }
 
     .stage{
       position: relative;
-      width: 1400px;
-      height: 900px;
+      width: 1500px;
+      height: 980px;
+      overflow: visible;
       background:
         radial-gradient(
           ellipse at center,
@@ -83,6 +86,7 @@
       justify-content: center;
       align-items: start;
       width: max-content;
+      overflow: visible; /* ✅ no scroll interno */
     }
 
     .row-bottom{
@@ -92,6 +96,7 @@
       justify-content: center;
       align-items: start;
       width: max-content;
+      overflow: visible; /* ✅ no scroll interno */
     }
 
     .polaroid{
@@ -105,15 +110,21 @@
       user-select: none;
       -webkit-tap-highlight-color: transparent;
 
-      transform: translateY(var(--lift,0)) rotate(var(--r,0deg));
+      /* ✅ corcho */
+      transform:
+        translateX(var(--tx,0))
+        translateY(var(--ty,0))
+        rotate(var(--r,0deg));
       transition: transform .16s ease, box-shadow .16s ease;
     }
 
     @media (hover: hover){
       .polaroid:hover{
-        transform: translateY(calc(var(--lift,0) - 2px))
-                   rotate(var(--r,0deg))
-                   scale(1.03);
+        transform:
+          translateX(var(--tx,0))
+          translateY(calc(var(--ty,0) - 4px))
+          rotate(var(--r,0deg))
+          scale(1.04);
         box-shadow: 0 18px 38px rgba(0,0,0,0.45);
         z-index: 20;
       }
@@ -139,7 +150,9 @@
       border-radius: 8px;
       overflow: hidden;
       background:#eee;
-      transform: rotate(calc(var(--r,0deg) * -1)); /* ✅ anti-blur */
+
+      /* desktop: foto recta dentro del marco */
+      transform: rotate(calc(var(--r,0deg) * -1));
       transform-origin: center;
     }
 
@@ -153,12 +166,13 @@
       pointer-events: none;
     }
 
-    /* offsets suaves (2 + 3) */
-    .p1{ --lift:  8px; --r:-2deg; }
-    .p2{ --lift: -6px; --r: 2deg; }
-    .p3{ --lift: 12px; --r:-1deg; }
-    .p4{ --lift: -4px; --r: 1deg; }
-    .p5{ --lift: 10px; --r:-2deg; }
+    /* ===== Desktop: más “corcho” (sin exagerar) ===== */
+    .p1{ --r:-3.0deg; --tx:-10px; --ty: 10px; } /* 01 */
+    .p2{ --r: 2.6deg; --tx:  8px; --ty:-12px; } /* 02 */
+
+    .p3{ --r:-2.0deg; --tx: 10px; --ty: 14px; } /* 03 */
+    .p4{ --r: 2.4deg; --tx:-10px; --ty:-10px; } /* 04 */
+    .p5{ --r:-3.2deg; --tx:  6px; --ty: 10px; } /* 05 */
 
     .modal{
       position: fixed;
@@ -179,13 +193,15 @@
       border-radius: 14px;
     }
 
-    /* ✅ móvil: mantener columnas por fila y permitir scroll horizontal */
+    /* ✅ móvil PRIORIDAD: scroll global + corcho suave */
     @media (max-width: 980px){
       :root{
         --polaroid-w: 185px;
         --photo-h: 135px;
-        --gap-x: 20px;
-        --gap-y: 36px;
+
+        --gap-x: 46px;
+        --gap-y: 44px;
+
         --center-y: 0px;
       }
 
@@ -194,18 +210,15 @@
         height: 900px;
       }
 
-      .row-top,
-      .row-bottom{
-        justify-content: start;
+      /* suave en móvil: distintas alturas + rotación pequeña */
+      .p1{ --r:-1.1deg; --tx:-3px; --ty:  8px; }
+      .p2{ --r: 0.9deg; --tx:  2px; --ty: -6px; }
 
-        overflow-x: auto;
-        overflow-y: visible;
-        -webkit-overflow-scrolling: touch;
-        padding: 0 10px 10px;
-        scroll-snap-type: x mandatory;
-      }
+      .p3{ --r:-0.8deg; --tx:  5px; --ty: 10px; }
+      .p4{ --r: 1.0deg; --tx:-5px; --ty: -6px; }
+      .p5{ --r:-1.2deg; --tx:  2px; --ty:  6px; }
 
-      .polaroid{ scroll-snap-align: center; --lift:0; --r:0deg; }
+      /* móvil: foto recta */
       .photo{ transform:none; }
     }
   </style>
@@ -272,7 +285,7 @@
       if(e.key === "Escape") closeModal();
     });
 
-    // ---------- FIX: entrar centrado (patrón Beomeosa/BIFF/Dongbaekseom) ----------
+    // ---------- Center on layout ----------
     if ("scrollRestoration" in history) history.scrollRestoration = "manual";
 
     function clamp(v, min, max){ return Math.min(Math.max(v, min), max); }
@@ -301,7 +314,6 @@
       if (!vp) return;
 
       vp.scrollTo({ left: 0, top: 0, behavior: "auto" });
-      // “nudge” Safari/iOS
       vp.scrollLeft = 1; vp.scrollTop = 1;
       vp.scrollLeft = 0; vp.scrollTop = 0;
     }

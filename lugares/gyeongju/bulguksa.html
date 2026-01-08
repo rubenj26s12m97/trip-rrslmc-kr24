@@ -8,14 +8,15 @@
 
   <style>
     :root{
-      --polaroid-w: 170px;
+      --polaroid-w: 172px;
       --photo-h: 124px;
 
-      --gap-x-3: 58px;
-      --gap-x-4: 46px;
-      --gap-y: 56px;
+      /* ✅ más aire (sin scroll por fila) */
+      --gap-x-3: 56px;
+      --gap-x-4: 44px;
+      --gap-y: 58px;
 
-      --center-y: -10px; /* ✅ ajuste fino: + baja, - sube */
+      --center-y: -10px;
     }
 
     html, body{
@@ -23,7 +24,7 @@
       height: 100%;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background: #000;
-      overflow: hidden; /* ✅ el scroll lo hace .viewport */
+      overflow: hidden;
     }
 
     .back{
@@ -48,8 +49,6 @@
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain;
       background: #000;
-
-      /* ✅ evita “anclajes” raros */
       overflow-anchor: none;
       scroll-behavior: auto;
     }
@@ -58,7 +57,7 @@
       position: relative;
       width: 1400px;
       height: 900px;
-
+      overflow: visible;
       background:
         radial-gradient(
           ellipse at center,
@@ -88,6 +87,7 @@
       justify-content: center;
       align-items: start;
       width: max-content;
+      overflow: visible; /* ✅ no scroll interno */
     }
 
     .row-4{
@@ -97,6 +97,7 @@
       justify-content: center;
       align-items: start;
       width: max-content;
+      overflow: visible; /* ✅ no scroll interno */
     }
 
     .polaroid{
@@ -110,15 +111,22 @@
       user-select: none;
       -webkit-tap-highlight-color: transparent;
 
-      transform: translateY(var(--lift, 0px)) rotate(var(--r, 0deg));
+      /* ✅ corcho */
+      transform:
+        translateX(var(--tx,0))
+        translateY(var(--ty,0))
+        rotate(var(--r,0deg));
+
       transition: transform .16s ease, box-shadow .16s ease;
     }
 
     @media (hover: hover){
       .polaroid:hover{
-        transform: translateY(calc(var(--lift, 0px) - 2px))
-                   rotate(var(--r, 0deg))
-                   scale(1.03);
+        transform:
+          translateX(var(--tx,0))
+          translateY(calc(var(--ty,0) - 4px))
+          rotate(var(--r,0deg))
+          scale(1.04);
         box-shadow: 0 18px 38px rgba(0,0,0,0.45);
         z-index: 20;
       }
@@ -144,6 +152,8 @@
       border-radius: 8px;
       overflow: hidden;
       background:#eee;
+
+      /* desktop: foto recta respecto al marco */
       transform: rotate(calc(var(--r, 0deg) * -1));
     }
 
@@ -157,19 +167,19 @@
       pointer-events: none;
     }
 
-    /* Offsets corcho (3 / 4 / 3) */
-    .p1 { --lift:  10px; --r: -2deg; }
-    .p2 { --lift:  -6px; --r:  2deg; }
-    .p3 { --lift:  14px; --r: -1deg; }
+    /* ===== Desktop: un poco más marcado ===== */
+    .p1 { --r:-3.0deg; --tx:-8px;  --ty: 12px; }
+    .p2 { --r: 2.6deg; --tx: 6px;  --ty: -8px; }
+    .p3 { --r:-2.0deg; --tx:10px;  --ty: 16px; }
 
-    .p4 { --lift:  -8px; --r:  2deg; }
-    .p5 { --lift:  12px; --r: -2deg; }
-    .p6 { --lift:  -4px; --r:  1deg; }
-    .p7 { --lift:  16px; --r: -1deg; }
+    .p4 { --r: 2.2deg; --tx:-10px; --ty:-10px; }
+    .p5 { --r:-3.2deg; --tx: 8px;  --ty: 10px; }
+    .p6 { --r: 2.0deg; --tx: 4px;  --ty: -8px; }
+    .p7 { --r:-2.4deg; --tx:-6px;  --ty: 14px; }
 
-    .p8  { --lift: -6px; --r:  2deg; }
-    .p9  { --lift: 10px; --r: -2deg; }
-    .p10 { --lift: -4px; --r:  1deg; }
+    .p8  { --r: 2.6deg; --tx:-8px; --ty:-12px; }
+    .p9  { --r:-3.0deg; --tx: 6px; --ty:  8px; }
+    .p10 { --r: 2.0deg; --tx:10px; --ty:-10px; }
 
     .modal{
       position: fixed;
@@ -191,14 +201,16 @@
       box-shadow: 0 18px 45px rgba(0,0,0,0.55);
     }
 
-    /* ✅ móvil: mantener 3/4/3 y permitir scroll horizontal por fila */
+    /* ✅ móvil PRIORIDAD: scroll global + corcho suave */
     @media (max-width: 1100px){
       :root{
         --polaroid-w: 160px;
         --photo-h: 118px;
-        --gap-x-3: 22px;
-        --gap-x-4: 18px;
-        --gap-y: 42px;
+
+        --gap-x-3: 30px;
+        --gap-x-4: 24px;
+        --gap-y: 44px;
+
         --center-y: -10px;
       }
 
@@ -207,18 +219,21 @@
         height: 900px;
       }
 
-      .row-3,
-      .row-4{
-        justify-content: start;
+      /* suave en móvil: rotación pequeña + alturas distintas */
+      .p1 { --r:-1.1deg; --tx:-3px; --ty:  8px; }
+      .p2 { --r: 0.9deg; --tx: 2px; --ty: -6px; }
+      .p3 { --r:-0.8deg; --tx: 4px; --ty: 10px; }
 
-        overflow-x: auto;
-        overflow-y: visible;
-        -webkit-overflow-scrolling: touch;
-        padding: 0 10px 10px;
-        scroll-snap-type: x mandatory;
-      }
+      .p4 { --r: 1.0deg; --tx:-4px; --ty: -6px; }
+      .p5 { --r:-1.2deg; --tx: 3px; --ty:  6px; }
+      .p6 { --r: 0.8deg; --tx: 1px; --ty: -4px; }
+      .p7 { --r:-0.9deg; --tx:-2px; --ty:  8px; }
 
-      .polaroid{ scroll-snap-align: center; --lift: 0px; --r: 0deg; }
+      .p8  { --r: 1.1deg; --tx:-3px; --ty: -8px; }
+      .p9  { --r:-1.0deg; --tx: 2px; --ty:  6px; }
+      .p10 { --r: 0.9deg; --tx: 3px; --ty: -6px; }
+
+      /* móvil: foto recta */
       .photo{ transform:none; }
     }
   </style>
@@ -283,7 +298,7 @@
       if (e.key === "Escape") closeModal();
     });
 
-    // ---------- FIX: entrar centrado (patrón Beomeosa/BIFF/Dongbaekseom) ----------
+    // ---------- Center on layout ----------
     if ("scrollRestoration" in history) history.scrollRestoration = "manual";
 
     function clamp(v, min, max){ return Math.min(Math.max(v, min), max); }
@@ -321,7 +336,6 @@
       if (!vp) return;
 
       vp.scrollTo({ left: 0, top: 0, behavior: "auto" });
-      // nudge Safari/iOS
       vp.scrollLeft = 1; vp.scrollTop = 1;
       vp.scrollLeft = 0; vp.scrollTop = 0;
     }

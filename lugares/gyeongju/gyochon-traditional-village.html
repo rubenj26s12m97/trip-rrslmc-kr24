@@ -8,10 +8,13 @@
 
   <style>
     :root{
-      --polaroid-w: 205px;
-      --photo-h: 148px;
-      --gap-x: 48px;
-      --center-y: 0px; /* ✅ ajuste fino: + baja, - sube */
+      --polaroid-w: 210px;
+      --photo-h: 150px;
+
+      /* ✅ más aire */
+      --gap-x: 72px;
+
+      --center-y: 0px;
     }
 
     html, body{
@@ -19,7 +22,7 @@
       height: 100%;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background: #000;
-      overflow: hidden; /* ✅ el scroll lo hace .viewport */
+      overflow: hidden;
     }
 
     .back{
@@ -44,16 +47,15 @@
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain;
       background: #000;
-
-      /* ✅ evita “anclajes”/saltos raros al cargar */
       overflow-anchor: none;
       scroll-behavior: auto;
     }
 
     .stage{
       position: relative;
-      width: 1400px;
-      height: 900px;
+      width: 1450px;
+      height: 940px;
+      overflow: visible;
       background:
         radial-gradient(
           ellipse at center,
@@ -75,6 +77,8 @@
       justify-content: center;
       align-items: start;
       width: max-content;
+
+      overflow: visible; /* ✅ no scroll interno */
     }
 
     .polaroid{
@@ -88,15 +92,22 @@
       user-select: none;
       -webkit-tap-highlight-color: transparent;
 
-      transform: translateY(var(--lift,0)) rotate(var(--r,0deg));
+      /* ✅ corcho */
+      transform:
+        translateX(var(--tx,0))
+        translateY(var(--ty,0))
+        rotate(var(--r,0deg));
+
       transition: transform .16s ease, box-shadow .16s ease;
     }
 
     @media (hover: hover){
       .polaroid:hover{
-        transform: translateY(calc(var(--lift,0) - 2px))
-                   rotate(var(--r,0deg))
-                   scale(1.03);
+        transform:
+          translateX(var(--tx,0))
+          translateY(calc(var(--ty,0) - 4px))
+          rotate(var(--r,0deg))
+          scale(1.04);
         box-shadow: 0 18px 38px rgba(0,0,0,0.45);
         z-index: 20;
       }
@@ -122,7 +133,9 @@
       border-radius: 8px;
       overflow: hidden;
       background:#eee;
-      transform: rotate(calc(var(--r,0deg) * -1)); /* ✅ anti-blur */
+
+      /* desktop: foto “recta” respecto al marco */
+      transform: rotate(calc(var(--r,0deg) * -1));
       transform-origin: center;
     }
 
@@ -136,10 +149,11 @@
       pointer-events: none;
     }
 
-    .p1{ --lift:  8px; --r:-2deg; }
-    .p2{ --lift: -6px; --r: 2deg; }
-    .p3{ --lift: 12px; --r:-1deg; }
-    .p4{ --lift: -4px; --r: 1deg; }
+    /* ===== Desktop: un poco más marcado ===== */
+    .p1{ --r:-3.0deg; --tx:-10px; --ty: 10px; }
+    .p2{ --r: 2.6deg; --tx:  6px; --ty:-10px; }
+    .p3{ --r:-2.0deg; --tx: 10px; --ty: 14px; }
+    .p4{ --r: 2.2deg; --tx: -8px; --ty: -8px; }
 
     .modal{
       position: fixed;
@@ -160,12 +174,13 @@
       border-radius: 14px;
     }
 
-    /* ✅ móvil: mantener 4 columnas y permitir scroll horizontal */
+    /* ✅ móvil PRIORIDAD: scroll global + corcho suave */
     @media (max-width: 980px){
       :root{
         --polaroid-w: 160px;
         --photo-h: 120px;
-        --gap-x: 18px;
+
+        --gap-x: 26px;
         --center-y: 0px;
       }
 
@@ -174,17 +189,13 @@
         height: 900px;
       }
 
-      .row{
-        justify-content: start;
+      /* suave en móvil: no todo a la misma altura */
+      .p1{ --r:-1.1deg; --tx:-3px; --ty:  8px; }
+      .p2{ --r: 0.9deg; --tx:  2px; --ty: -6px; }
+      .p3{ --r:-0.8deg; --tx:  4px; --ty: 10px; }
+      .p4{ --r: 1.0deg; --tx:-4px; --ty: -6px; }
 
-        overflow-x: auto;
-        overflow-y: visible;
-        -webkit-overflow-scrolling: touch;
-        padding: 0 10px 10px;
-        scroll-snap-type: x mandatory;
-      }
-
-      .polaroid{ scroll-snap-align: center; --lift:0; --r:0deg; }
+      /* móvil: foto recta */
       .photo{ transform:none; }
     }
   </style>
@@ -243,7 +254,7 @@
       if(e.key==="Escape") closeModal();
     });
 
-    // ---------- FIX: entrar centrado (patrón Beomeosa/BIFF/Dongbaekseom) ----------
+    // ---------- Center on row ----------
     if ("scrollRestoration" in history) history.scrollRestoration = "manual";
 
     function clamp(v, min, max){ return Math.min(Math.max(v, min), max); }
@@ -272,7 +283,6 @@
       if (!vp) return;
 
       vp.scrollTo({ left: 0, top: 0, behavior: "auto" });
-      // “nudge” Safari/iOS
       vp.scrollLeft = 1; vp.scrollTop = 1;
       vp.scrollLeft = 0; vp.scrollTop = 0;
     }
