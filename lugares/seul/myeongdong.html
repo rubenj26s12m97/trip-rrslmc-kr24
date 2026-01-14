@@ -23,6 +23,10 @@
       overflow-x: hidden;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
+
+      /* ✅ estabilidad (opcional pero útil en iOS) */
+      overflow-anchor: none;
+      scroll-behavior: auto;
     }
 
     /* Fondo */
@@ -93,6 +97,7 @@
       transform: translateY(var(--lift,0)) rotate(var(--r, 0deg));
       transition: transform .16s ease, box-shadow .16s ease;
       will-change: transform;
+      transform-origin: center;
     }
 
     @media (hover: hover){
@@ -135,6 +140,11 @@
       height: 100%;
       object-fit: cover;
       display:block;
+
+      /* ✅ consistencia / evita gestos raros */
+      user-select: none;
+      -webkit-user-drag: none;
+      pointer-events: none;
     }
 
     /* Rotaciones + micro lift (2) */

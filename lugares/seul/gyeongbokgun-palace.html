@@ -10,8 +10,11 @@
     :root{
       --polaroid-w: 235px;
       --photo-h: 160px;
-      --gap-x: 44px;
-      --gap-y: 36px;
+
+      /* ✅ más aire (desktop) */
+      --gap-x: 56px;
+      --gap-y: 42px;
+
       --center-y: 0px; /* ajuste fino vertical del bloque */
     }
 
@@ -20,7 +23,7 @@
       height: 100%;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background: #000;
-      overflow: hidden; /* ✅ scroll solo en viewport */
+      overflow: hidden;
     }
 
     .back{
@@ -45,7 +48,6 @@
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain;
       background: #000;
-
       overflow-anchor: none;
       scroll-behavior: auto;
     }
@@ -93,7 +95,8 @@
       user-select: none;
       -webkit-tap-highlight-color: transparent;
 
-      transform: translateY(var(--lift,0)) rotate(var(--r,0deg));
+      /* ✅ corcho: rotación + micro desplazamiento */
+      transform: rotate(var(--r,0deg)) translate(var(--tx,0px), var(--ty,0px));
       transition: transform .16s ease, box-shadow .16s ease;
       transform-origin: center;
       will-change: transform;
@@ -101,8 +104,8 @@
 
     @media (hover:hover){
       .polaroid:hover{
-        transform: translateY(calc(var(--lift,0) - 2px))
-                   rotate(var(--r,0deg))
+        transform: rotate(var(--r,0deg))
+                   translate(var(--tx,0px), calc(var(--ty,0px) - 2px))
                    scale(1.04);
         box-shadow: 0 18px 38px rgba(0,0,0,0.45);
         z-index: 20;
@@ -144,13 +147,14 @@
       pointer-events: none;
     }
 
-    /* Variaciones suaves */
-    .p1{ --lift:  4px; --r:-1.6deg; }
-    .p2{ --lift: -3px; --r: 1.4deg; }
-    .p3{ --lift:  2px; --r:-1deg; }
-    .p4{ --lift: -4px; --r: 1.8deg; }
-    .p5{ --lift:  3px; --r:-1.2deg; }
-    .p6{ --lift: -2px; --r: 1deg; }
+    /* ✅ “desorden controlado” (desktop) */
+    .p1{ --r:-2.5deg; --tx:-10px; --ty:-8px; }
+    .p2{ --r: 1.8deg; --tx:  6px; --ty:  4px; }
+    .p3{ --r:-1.4deg; --tx: 10px; --ty: -6px; }
+
+    .p4{ --r: 2.2deg; --tx:-12px; --ty: 10px; }
+    .p5{ --r:-1.8deg; --tx:  8px; --ty: -4px; }
+    .p6{ --r: 1.2deg; --tx: 12px; --ty:  8px; }
 
     /* Modal */
     .modal{
@@ -172,13 +176,16 @@
       border-radius: 14px;
     }
 
-    /* ✅ móvil: mantener 3 columnas por fila (scroll horizontal dentro de cada fila) */
+    /* ✅ móvil: mantener 3 columnas por fila (scroll horizontal por fila) + corcho suave */
     @media (max-width: 980px){
       :root{
         --polaroid-w: 210px;
         --photo-h: 145px;
-        --gap-x: 22px;
-        --gap-y: 28px;
+
+        /* ✅ aire en móvil */
+        --gap-x: 26px;
+        --gap-y: 30px;
+
         --center-y: 0px;
       }
 
@@ -196,8 +203,16 @@
         scroll-snap-type: x mandatory;
       }
 
-      .polaroid{ scroll-snap-align: center; --lift:0; --r:0deg; }
-      .photo{ transform:none; }
+      .polaroid{ scroll-snap-align: center; }
+
+      /* ✅ corcho suave (no cero) */
+      .p1{ --r:-1.8deg; --tx:-6px; --ty:-5px; }
+      .p2{ --r: 1.2deg; --tx: 4px; --ty: 3px; }
+      .p3{ --r:-1.0deg; --tx: 6px; --ty:-4px; }
+
+      .p4{ --r: 1.4deg; --tx:-7px; --ty: 6px; }
+      .p5{ --r:-1.2deg; --tx: 5px; --ty:-3px; }
+      .p6{ --r: 0.9deg; --tx: 7px; --ty: 5px; }
     }
   </style>
 </head>

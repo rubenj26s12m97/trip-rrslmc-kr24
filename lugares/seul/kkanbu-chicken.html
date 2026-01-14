@@ -90,7 +90,10 @@
       -webkit-tap-highlight-color: transparent;
       transition: transform .16s ease, box-shadow .16s ease;
       will-change: transform;
+
+      /* ✅ patrón estándar: mueve por variables */
       transform: translate(var(--tx, 0px), var(--ty, 0px)) rotate(var(--r, 0deg));
+      transform-origin: center;
     }
 
     @media (hover: hover){
@@ -124,6 +127,10 @@
       border-radius: 8px;
       overflow: hidden;
       background:#eee;
+
+      /* ✅ anti-blur: des-rotar la foto */
+      transform: rotate(calc(var(--r, 0deg) * -1));
+      transform-origin: center;
     }
 
     .photo img{
@@ -131,21 +138,19 @@
       height: 100%;
       object-fit: cover;
       display:block;
+      user-select: none;
+      -webkit-user-drag: none;
+      pointer-events: none;
     }
 
     /* Posiciones */
     .p1{
       top: 0;
       left: 50%;
+      /* ✅ centrar el card */
       --tx: -50%;
       --ty: 0px;
       --r: -2deg;
-      transform: translateX(var(--tx)) translateY(var(--ty)) rotate(var(--r));
-    }
-    @media (hover:hover){
-      .p1:hover{
-        transform: translateX(var(--tx)) translateY(calc(var(--ty) - 2px)) rotate(var(--r)) scale(1.03);
-      }
     }
 
     .p2{
@@ -191,10 +196,13 @@
         --photo-h: 130px;
         --base-gap: 56px;
       }
-      /* En móvil, si queda grande, que reduzca un poco SIN romper el centrado */
+
+      /* Si queda grande, reduce sin romper centrado */
       .pyramid{ transform: scale(0.95); transform-origin: center top; }
-      /* Para evitar “re-enfoque” raro al tocar en móvil */
-      .polaroid{ transition: transform .12s ease, box-shadow .12s ease; }
+
+      /* ✅ móvil: neutraliza tilt (patrón estándar) */
+      .polaroid{ --r: 0deg; --ty: 0px; transition: transform .12s ease, box-shadow .12s ease; }
+      .photo{ transform: none; }
     }
   </style>
 </head>

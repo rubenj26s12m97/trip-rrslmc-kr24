@@ -24,6 +24,10 @@
       overflow-x: hidden;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
+
+      /* ✅ estabilidad (iOS / Safari) */
+      overflow-anchor: none;
+      scroll-behavior: auto;
     }
 
     /* Fondo fijo con zoom */
@@ -107,6 +111,7 @@
       -webkit-tap-highlight-color: transparent;
 
       transform: translateY(var(--lift,0)) rotate(var(--r,0deg));
+      transform-origin: center; /* ✅ */
       transition: transform .16s ease, box-shadow .16s ease;
       will-change: transform;
     }
@@ -151,6 +156,11 @@
       height: 100%;
       object-fit: cover;
       display:block;
+
+      /* ✅ consistencia / evita gestos raros */
+      user-select: none;
+      -webkit-user-drag: none;
+      pointer-events: none;
     }
 
     /* offsets */
@@ -197,7 +207,6 @@
         scroll-snap-type: x mandatory;
       }
 
-      /* mantenemos 2 y 3 columnas tal cual */
       .row.r2{ grid-template-columns: repeat(2, var(--polaroid-w)); }
       .row.r3{ grid-template-columns: repeat(3, var(--polaroid-w)); }
 

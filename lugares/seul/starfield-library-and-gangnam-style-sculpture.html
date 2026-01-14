@@ -23,6 +23,10 @@
       overflow-x: hidden;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
+
+      /* ✅ estabilidad (iOS / Safari) */
+      overflow-anchor: none;
+      scroll-behavior: auto;
     }
 
     /* Fondo fijo */
@@ -94,6 +98,7 @@
       -webkit-tap-highlight-color: transparent;
 
       transform: translateY(var(--lift,0)) rotate(var(--r,0deg));
+      transform-origin: center; /* ✅ */
       transition: transform .16s ease, box-shadow .16s ease;
       will-change: transform;
     }
@@ -138,6 +143,11 @@
       height: 100%;
       object-fit: cover;
       display:block;
+
+      /* ✅ consistencia / evita drag y gestos raros */
+      user-select: none;
+      -webkit-user-drag: none;
+      pointer-events: none;
     }
 
     /* Offsets */

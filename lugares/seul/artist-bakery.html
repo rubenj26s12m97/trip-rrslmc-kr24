@@ -10,8 +10,11 @@
     :root{
       --polaroid-w: 225px;
       --photo-h: 155px;
-      --gap-x: 48px;
-      --gap-y: 46px;
+
+      /* ✅ un pelín más de aire (desktop) */
+      --gap-x: 64px;
+      --gap-y: 58px;
+
       --center-y: 0px; /* ✅ ajuste fino */
     }
 
@@ -46,7 +49,6 @@
       overscroll-behavior: contain;
       background: #000;
 
-      /* ✅ evita “anclajes”/saltos raros al cargar */
       overflow-anchor: none;
       scroll-behavior: auto;
     }
@@ -107,16 +109,17 @@
       user-select: none;
       -webkit-tap-highlight-color: transparent;
 
-      transform: translateY(var(--lift,0)) rotate(var(--r,0deg));
-      transition: transform .16s ease, box-shadow .16s ease;
+      /* ✅ corcho: rotación + micro desplazamientos */
+      transform: rotate(var(--r,0deg)) translate(var(--tx,0px), var(--ty,0px));
       transform-origin: center;
+      transition: transform .16s ease, box-shadow .16s ease;
       will-change: transform;
     }
 
     @media (hover: hover){
       .polaroid:hover{
-        transform: translateY(calc(var(--lift,0) - 2px))
-                   rotate(var(--r,0deg))
+        transform: rotate(var(--r,0deg))
+                   translate(var(--tx,0px), calc(var(--ty,0px) - 2px))
                    scale(1.03);
         box-shadow: 0 18px 38px rgba(0,0,0,0.45);
         z-index: 20;
@@ -159,10 +162,10 @@
       pointer-events: none;
     }
 
-    /* Offsets suaves */
-    .p1{ --lift:  6px;  --r:-1deg; }  /* arriba */
-    .p2{ --lift: -6px;  --r: 2deg; }
-    .p3{ --lift:  8px;  --r:-2deg; }
+    /* ✅ offsets “corcho” (sin superposición) */
+    .p1{ --r:-3deg; --tx:-10px; --ty:-8px; } /* arriba */
+    .p2{ --r: 2deg; --tx:-14px; --ty: 10px; }
+    .p3{ --r:-2deg; --tx: 12px; --ty:  4px; }
 
     /* Modal */
     .modal{
@@ -184,13 +187,15 @@
       border-radius: 14px;
     }
 
-    /* ✅ móvil: mantener 1 arriba / 2 abajo, stage algo menor, neutralizar tilt */
+    /* ✅ móvil PRIORIDAD:
+       - mantiene “corcho” suave
+       - y la fila de 2 permite scroll horizontal si hace falta */
     @media (max-width: 980px){
       :root{
         --polaroid-w: 200px;
         --photo-h: 140px;
-        --gap-x: 20px;
-        --gap-y: 36px;
+        --gap-x: 26px;
+        --gap-y: 42px;
         --center-y: 0px;
       }
 
@@ -199,8 +204,21 @@
         height: 900px;
       }
 
-      .polaroid{ --lift:0; --r:0deg; }
-      .photo{ transform:none; }
+      /* ✅ si no cabe la fila de 2, scroll por fila + snap */
+      .row-bottom{
+        justify-content: start;
+        overflow-x: auto;
+        overflow-y: visible;
+        -webkit-overflow-scrolling: touch;
+        padding: 0 10px 10px;
+        scroll-snap-type: x mandatory;
+      }
+      .row-bottom .polaroid{ scroll-snap-align: center; }
+
+      /* ✅ offsets más suaves en móvil (pero no a cero) */
+      .p1{ --r:-2deg; --tx:-6px;  --ty:-6px; }
+      .p2{ --r: 1deg; --tx:-8px;  --ty: 6px; }
+      .p3{ --r:-1deg; --tx: 8px;  --ty: 4px; }
     }
   </style>
 </head>
@@ -261,7 +279,7 @@
       if (e.key === "Escape") closeModal();
     });
 
-    // ---------- FIX: entrar centrado (patrón Beomeosa/BIFF/Dongbaekseom) ----------
+    // ---------- FIX: entrar centrado ----------
     if ("scrollRestoration" in history) history.scrollRestoration = "manual";
 
     function clamp(v, min, max){ return Math.min(Math.max(v, min), max); }
@@ -290,14 +308,13 @@
       if (!vp) return;
 
       vp.scrollTo({ left: 0, top: 0, behavior: "auto" });
-      // “nudge” (Safari/iOS a veces ignora el primer set)
+      // “nudge” (Safari/iOS)
       vp.scrollLeft = 1; vp.scrollTop = 1;
       vp.scrollLeft = 0; vp.scrollTop = 0;
     }
 
     function forceCenter(){
       hardResetScroll();
-
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           centerOnLayout();

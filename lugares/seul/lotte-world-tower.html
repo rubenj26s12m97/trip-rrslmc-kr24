@@ -96,6 +96,7 @@
 
       transform: translateY(var(--lift,0)) rotate(var(--r,0deg));
       transition: transform .16s ease, box-shadow .16s ease;
+      transform-origin: center;
       will-change: transform;
     }
 
@@ -139,6 +140,11 @@
       height: 100%;
       object-fit: cover;
       display:block;
+
+      /* ✅ consistencia / evita gestos raros */
+      user-select: none;
+      -webkit-user-drag: none;
+      pointer-events: none;
     }
 
     /* Offsets suaves */
