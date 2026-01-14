@@ -10,7 +10,10 @@
     :root{
       --polaroid-w: 220px;
       --photo-h: 155px;
-      --base-gap: 80px; /* separación entre 02 y 03 */
+
+      --base-gap: 92px;   /* ✅ más aire entre 02 y 03 */
+      --row-gap: 44px;    /* ✅ aire vertical (entre 01 y base) */
+      --center-y: 0px;    /* ✅ ajuste fino del bloque */
     }
 
     html, body{
@@ -19,13 +22,16 @@
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background: #000;
 
-      /* ✅ patrón C: permitir scroll */
+      /* ✅ patrón C: fondo fijo + contenido centrado */
       overflow-x: hidden;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
+
+      overflow-anchor: none;
+      scroll-behavior: auto;
     }
 
-    /* Fondo */
+    /* ✅ Fondo fijo */
     .bg{
       position: fixed;
       inset: 0;
@@ -38,8 +44,8 @@
       inset: 0;
       background: radial-gradient(
         ellipse at center,
-        rgba(0,0,0,0.15),
-        rgba(0,0,0,0.6)
+        rgba(0,0,0,0.18),
+        rgba(0,0,0,0.66)
       );
       z-index: 1;
       pointer-events: none;
@@ -60,7 +66,7 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* ✅ Contenedor scrolleable */
+    /* ✅ Contenido centrado (sin entrar por esquina) */
     .board{
       position: relative;
       z-index: 5;
@@ -71,11 +77,12 @@
       box-sizing: border-box;
     }
 
-    /* Pirámide */
+    /* Pirámide centrada */
     .pyramid{
       position: relative;
       width: calc(var(--polaroid-w) * 2 + var(--base-gap));
-      height: calc(var(--photo-h) * 2 + 140px);
+      height: calc(var(--photo-h) * 2 + var(--row-gap) + 120px);
+      transform: translateY(var(--center-y));
     }
 
     .polaroid{
@@ -88,12 +95,11 @@
       position: absolute;
       user-select: none;
       -webkit-tap-highlight-color: transparent;
+
       transition: transform .16s ease, box-shadow .16s ease;
       will-change: transform;
 
-      /* ✅ patrón estándar: mueve por variables */
       transform: translate(var(--tx, 0px), var(--ty, 0px)) rotate(var(--r, 0deg));
-      transform-origin: center;
     }
 
     @media (hover: hover){
@@ -128,8 +134,8 @@
       overflow: hidden;
       background:#eee;
 
-      /* ✅ anti-blur: des-rotar la foto */
-      transform: rotate(calc(var(--r, 0deg) * -1));
+      /* ✅ anti-blur: des-rotamos la foto */
+      transform: rotate(calc(var(--r,0deg) * -1));
       transform-origin: center;
     }
 
@@ -143,14 +149,20 @@
       pointer-events: none;
     }
 
-    /* Posiciones */
+    /* Posiciones (pirámide) */
     .p1{
       top: 0;
       left: 50%;
-      /* ✅ centrar el card */
       --tx: -50%;
       --ty: 0px;
       --r: -2deg;
+      transform: translateX(var(--tx)) translateY(var(--ty)) rotate(var(--r));
+    }
+
+    @media (hover:hover){
+      .p1:hover{
+        transform: translateX(var(--tx)) translateY(calc(var(--ty) - 2px)) rotate(var(--r)) scale(1.03);
+      }
     }
 
     .p2{
@@ -173,13 +185,14 @@
     .modal{
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.88);
+      background: rgba(0,0,0,0.90);
       display: none;
       align-items: center;
       justify-content: center;
       z-index: 50;
       padding: 18px;
       box-sizing: border-box;
+      isolation: isolate;
     }
     .modal.open{ display:flex; }
 
@@ -188,21 +201,28 @@
       max-height: 92vh;
       object-fit: contain;
       border-radius: 14px;
+      box-shadow: 0 18px 45px rgba(0,0,0,0.55);
+      filter: none !important;
+      mix-blend-mode: normal !important;
     }
 
+    /* ✅ móvil */
     @media (max-width: 520px){
       :root{
         --polaroid-w: 180px;
         --photo-h: 130px;
-        --base-gap: 56px;
+        --base-gap: 62px;
+        --row-gap: 36px;
       }
 
-      /* Si queda grande, reduce sin romper centrado */
-      .pyramid{ transform: scale(0.95); transform-origin: center top; }
+      .board{ padding-top: 78px; }
 
-      /* ✅ móvil: neutraliza tilt (patrón estándar) */
-      .polaroid{ --r: 0deg; --ty: 0px; transition: transform .12s ease, box-shadow .12s ease; }
-      .photo{ transform: none; }
+      /* si queda grande, reduce sin romper centrado */
+      .pyramid{ transform: translateY(var(--center-y)) scale(0.96); transform-origin: center top; }
+
+      .polaroid{ transition: transform .12s ease, box-shadow .12s ease; }
+      .photo{ transform:none; }
+      .polaroid{ --r:0deg; }
     }
   </style>
 </head>
@@ -215,21 +235,24 @@
 
   <main class="board">
     <div class="pyramid" aria-label="Fotos Kkanbu Chicken">
+      <!-- 01 arriba -->
       <div class="polaroid p1" data-src="../../img/seul/kkanbu-chicken/01.jpg">
         <div class="photo"><img src="../../img/seul/kkanbu-chicken/01.jpg" alt=""></div>
       </div>
 
+      <!-- 02 abajo izquierda -->
       <div class="polaroid p2" data-src="../../img/seul/kkanbu-chicken/02.jpg">
         <div class="photo"><img src="../../img/seul/kkanbu-chicken/02.jpg" alt=""></div>
       </div>
 
+      <!-- 03 abajo derecha -->
       <div class="polaroid p3" data-src="../../img/seul/kkanbu-chicken/03.jpg">
         <div class="photo"><img src="../../img/seul/kkanbu-chicken/03.jpg" alt=""></div>
       </div>
     </div>
   </main>
 
-  <div class="modal" id="modal">
+  <div class="modal" id="modal" aria-hidden="true">
     <img id="modalImg" alt="">
   </div>
 
@@ -240,9 +263,11 @@
     function openModal(src){
       modalImg.src = src;
       modal.classList.add("open");
+      modal.setAttribute("aria-hidden","false");
     }
     function closeModal(){
       modal.classList.remove("open");
+      modal.setAttribute("aria-hidden","true");
       modalImg.src = "";
     }
 
@@ -253,7 +278,9 @@
       });
     });
 
-    modal.addEventListener("click", closeModal);
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) closeModal();
+    });
 
     window.addEventListener("keydown", e => {
       if (e.key === "Escape") closeModal();

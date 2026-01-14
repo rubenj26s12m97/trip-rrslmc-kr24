@@ -10,7 +10,12 @@
     :root{
       --polaroid-w: 210px;
       --photo-h: 150px;
-      --gap-x: 40px;
+
+      /* ✅ más aire entre polaroids */
+      --gap-x: 56px;
+
+      /* ✅ ajuste fino si quieres subir/bajar el bloque */
+      --center-y: 0px;
     }
 
     html, body{
@@ -19,13 +24,16 @@
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background: #000;
 
-      /* ✅ patrón C: permitir scroll */
+      /* ✅ patrón C: fondo fijo + contenido centrado */
       overflow-x: hidden;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
+
+      overflow-anchor: none;
+      scroll-behavior: auto;
     }
 
-    /* Fondo */
+    /* ✅ Fondo fijo (NO se mueve) */
     .bg{
       position: fixed;
       inset: 0;
@@ -38,8 +46,8 @@
       inset: 0;
       background: radial-gradient(
         ellipse at center,
-        rgba(0,0,0,0.15),
-        rgba(0,0,0,0.65)
+        rgba(0,0,0,0.18),
+        rgba(0,0,0,0.70)
       );
       z-index: 1;
       pointer-events: none;
@@ -60,7 +68,7 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* ✅ ya no fixed: permite crecer y hacer scroll */
+    /* ✅ Contenido centrado (sin entrar por esquina) */
     .board{
       position: relative;
       z-index: 5;
@@ -78,8 +86,9 @@
       column-gap: var(--gap-x);
       justify-content: center;
       align-items: start;
-      width: 100%;
-      box-sizing: border-box;
+      width: max-content;
+
+      transform: translateY(var(--center-y));
     }
 
     /* Polaroids */
@@ -96,7 +105,6 @@
 
       transform: translateY(var(--lift,0)) rotate(var(--r,0deg));
       transition: transform .16s ease, box-shadow .16s ease;
-      transform-origin: center;
       will-change: transform;
     }
 
@@ -140,8 +148,6 @@
       height: 100%;
       object-fit: cover;
       display:block;
-
-      /* ✅ consistencia / evita gestos raros */
       user-select: none;
       -webkit-user-drag: none;
       pointer-events: none;
@@ -157,13 +163,14 @@
     .modal{
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.9);
+      background: rgba(0,0,0,0.90);
       display: none;
       align-items: center;
       justify-content: center;
       z-index: 50;
       padding: 18px;
       box-sizing: border-box;
+      isolation: isolate;
     }
     .modal.open{ display:flex; }
 
@@ -172,19 +179,23 @@
       max-height: 92vh;
       object-fit: contain;
       border-radius: 14px;
+      box-shadow: 0 18px 45px rgba(0,0,0,0.55);
+      filter: none !important;
+      mix-blend-mode: normal !important;
     }
 
-    /* ✅ móvil: mantener 4 columnas y permitir scroll horizontal (NO reflow a 2/1) */
+    /* ✅ móvil: mantener 4 columnas + scroll horizontal SOLO de la fila */
     @media (max-width: 980px){
       :root{
         --polaroid-w: 190px;
         --photo-h: 135px;
-        --gap-x: 18px;
+        --gap-x: 22px;
+        --center-y: 0px;
       }
 
+      .board{ padding-top: 78px; }
+
       .row{
-        grid-template-columns: repeat(4, var(--polaroid-w));
-        column-gap: var(--gap-x);
         justify-content: start;
 
         overflow-x: auto;
@@ -192,6 +203,9 @@
         -webkit-overflow-scrolling: touch;
         padding: 0 10px 10px;
         scroll-snap-type: x mandatory;
+
+        width: min(100%, 96vw);
+        box-sizing: border-box;
       }
 
       .polaroid{ scroll-snap-align: center; --lift:0; --r:0deg; }
@@ -202,9 +216,8 @@
       :root{
         --polaroid-w: 170px;
         --photo-h: 120px;
-        --gap-x: 16px;
+        --gap-x: 18px;
       }
-      .board{ padding-top: 78px; }
     }
   </style>
 </head>
@@ -216,7 +229,7 @@
   <a class="back" href="../../seul.html">← Volver a Seúl</a>
 
   <main class="board">
-    <div class="row">
+    <div class="row" aria-label="Fotos Lotte World Tower">
       <div class="polaroid p1" data-src="../../img/seul/lotte-world-tower/01.bmp">
         <div class="photo"><img src="../../img/seul/lotte-world-tower/01.bmp" alt=""></div>
       </div>
@@ -235,7 +248,7 @@
     </div>
   </main>
 
-  <div class="modal" id="modal">
+  <div class="modal" id="modal" aria-hidden="true">
     <img id="modalImg" alt="">
   </div>
 
@@ -246,9 +259,11 @@
     function openModal(src){
       modalImg.src = src;
       modal.classList.add("open");
+      modal.setAttribute("aria-hidden","false");
     }
     function closeModal(){
       modal.classList.remove("open");
+      modal.setAttribute("aria-hidden","true");
       modalImg.src = "";
     }
 
@@ -259,7 +274,9 @@
       });
     });
 
-    modal.addEventListener("click", closeModal);
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) closeModal();
+    });
 
     window.addEventListener("keydown", e => {
       if (e.key === "Escape") closeModal();

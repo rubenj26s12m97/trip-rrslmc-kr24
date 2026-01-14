@@ -10,8 +10,13 @@
     :root{
       --polaroid-w: 240px;
       --photo-h: 165px;
-      --gap-x: 48px;
-      --gap-y: 34px;
+
+      /* ✅ un poco más de aire (antes 48 / 34) */
+      --gap-x: 60px;
+      --gap-y: 40px;
+
+      /* ✅ ajuste fino arriba/abajo del bloque */
+      --center-y: 0px;
     }
 
     html, body{
@@ -20,17 +25,16 @@
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background: #000;
 
-      /* ✅ patrón C */
+      /* ✅ patrón C: fondo fijo + contenido centrado */
       overflow-x: hidden;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
 
-      /* ✅ estabilidad (iOS / Safari) */
       overflow-anchor: none;
       scroll-behavior: auto;
     }
 
-    /* Fondo fijo con zoom */
+    /* ✅ Fondo fijo (NO se mueve) */
     .bg{
       position: fixed;
       inset: 0;
@@ -47,7 +51,7 @@
       background: radial-gradient(
         ellipse at center,
         rgba(0,0,0,0.12),
-        rgba(0,0,0,0.7)
+        rgba(0,0,0,0.72)
       );
       z-index: 1;
       pointer-events: none;
@@ -68,23 +72,24 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* Contenedor con scroll */
+    /* ✅ Contenido centrado (sin “entrar por esquina”) */
     .board{
       position: relative;
       z-index: 5;
       min-height: 100vh;
       display: grid;
-      place-items: start center;
-      padding-top: 95px;
-      padding-bottom: 120px;
+      place-items: center;
+      padding: 95px 18px 120px;
       box-sizing: border-box;
     }
 
     .stack{
       display: grid;
       row-gap: var(--gap-y);
-      width: 100%;
       justify-items: center;
+      width: max-content;
+
+      transform: translateY(var(--center-y));
     }
 
     .row{
@@ -92,7 +97,7 @@
       column-gap: var(--gap-x);
       justify-content: center;
       align-items: start;
-      width: 100%;
+      width: max-content;
       box-sizing: border-box;
     }
 
@@ -111,7 +116,6 @@
       -webkit-tap-highlight-color: transparent;
 
       transform: translateY(var(--lift,0)) rotate(var(--r,0deg));
-      transform-origin: center; /* ✅ */
       transition: transform .16s ease, box-shadow .16s ease;
       will-change: transform;
     }
@@ -156,8 +160,6 @@
       height: 100%;
       object-fit: cover;
       display:block;
-
-      /* ✅ consistencia / evita gestos raros */
       user-select: none;
       -webkit-user-drag: none;
       pointer-events: none;
@@ -180,6 +182,7 @@
       z-index: 50;
       padding: 18px;
       box-sizing: border-box;
+      isolation: isolate;
     }
     .modal.open{ display:flex; }
     .modal img{
@@ -187,6 +190,9 @@
       max-height: 92vh;
       object-fit: contain;
       border-radius: 14px;
+      box-shadow: 0 18px 45px rgba(0,0,0,0.55);
+      filter: none !important;
+      mix-blend-mode: normal !important;
     }
 
     /* ✅ móvil: mantener 2/3/2 y permitir scroll horizontal por fila */
@@ -194,17 +200,26 @@
       :root{
         --polaroid-w: 210px;
         --photo-h: 145px;
-        --gap-x: 22px;
+
+        /* un pelín menos en móvil */
+        --gap-x: 26px;
         --gap-y: 28px;
+        --center-y: 0px;
       }
+
+      .board{ padding-top: 78px; }
 
       .row{
         justify-content: start;
+
         overflow-x: auto;
         overflow-y: visible;
         -webkit-overflow-scrolling: touch;
         padding: 0 10px 10px;
         scroll-snap-type: x mandatory;
+
+        width: min(100%, 96vw);
+        box-sizing: border-box;
       }
 
       .row.r2{ grid-template-columns: repeat(2, var(--polaroid-w)); }
@@ -218,10 +233,9 @@
       :root{
         --polaroid-w: 190px;
         --photo-h: 135px;
-        --gap-x: 18px;
-        --gap-y: 26px;
+        --gap-x: 20px;
+        --gap-y: 24px;
       }
-      .board{ padding-top: 78px; }
     }
   </style>
 </head>
@@ -233,7 +247,7 @@
   <a class="back" href="../../seul.html">← Volver a Seúl</a>
 
   <main class="board">
-    <div class="stack">
+    <div class="stack" aria-label="Fotos Namsan Park and Seoul Tower">
 
       <!-- Fila 1: 2 -->
       <div class="row r2">
@@ -272,7 +286,7 @@
   </main>
 
   <!-- Modal -->
-  <div class="modal" id="modal">
+  <div class="modal" id="modal" aria-hidden="true">
     <img id="modalImg" alt="">
   </div>
 
@@ -283,9 +297,11 @@
     function openModal(src){
       modalImg.src = src;
       modal.classList.add("open");
+      modal.setAttribute("aria-hidden","false");
     }
     function closeModal(){
       modal.classList.remove("open");
+      modal.setAttribute("aria-hidden","true");
       modalImg.src = "";
     }
 
@@ -296,7 +312,9 @@
       });
     });
 
-    modal.addEventListener("click", closeModal);
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) closeModal();
+    });
 
     window.addEventListener("keydown", e => {
       if (e.key === "Escape") closeModal();

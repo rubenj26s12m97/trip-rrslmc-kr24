@@ -8,14 +8,14 @@
 
   <style>
     :root{
-      --polaroid-w: 235px;
-      --photo-h: 165px;
+      --polaroid-w: 250px;
+      --photo-h: 175px;
 
-      /* ✅ un poco más de aire (desktop) */
-      --gap-x: 66px;
-      --gap-y: 60px;
+      /* ✅ MÁS GAP */
+      --gap-x: 78px;  /* separación entre las 2 de abajo */
+      --gap-y: 58px;  /* separación vertical entre fila de arriba y abajo */
 
-      --center-y: 0px; /* ✅ ajuste fino arriba/abajo */
+      --center-y: 0px; /* ajuste fino */
     }
 
     html, body{
@@ -23,14 +23,41 @@
       height: 100%;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background: #000;
-      overflow: hidden; /* ✅ scroll lo hace .viewport */
+
+      /* ✅ patrón C */
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+
+      overflow-anchor: none;
+      scroll-behavior: auto;
+    }
+
+    /* Fondo fijo */
+    .bg{
+      position: fixed;
+      inset: 0;
+      background: url("../../img/seul/bongeusa-temple/01.jpg") center 45% / cover no-repeat;
+      z-index: 0;
+    }
+
+    .shade{
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(
+        ellipse at center,
+        rgba(0,0,0,0.14),
+        rgba(0,0,0,0.68)
+      );
+      z-index: 1;
+      pointer-events: none;
     }
 
     .back{
       position: fixed;
       top: 14px;
       left: 14px;
-      z-index: 20;
+      z-index: 10;
       background: rgba(255,255,255,0.92);
       color: #000;
       text-decoration: none;
@@ -41,38 +68,19 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    .viewport{
-      position: fixed;
-      inset: 0;
-      overflow: auto;
-      -webkit-overflow-scrolling: touch;
-      overscroll-behavior: contain;
-      background: #000;
-
-      overflow-anchor: none;
-      scroll-behavior: auto;
-    }
-
-    .stage{
+    /* Contenido centrado */
+    .board{
       position: relative;
-      width: 1400px;
-      height: 900px;
-      background:
-        radial-gradient(
-          ellipse at center,
-          rgba(0,0,0,0.15),
-          rgba(0,0,0,0.65)
-        ),
-        url("../../img/seul/bongeusa-temple/01.jpg") center 45% / cover no-repeat;
+      z-index: 5;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 95px 18px 70px;
+      box-sizing: border-box;
     }
 
-    /* Layout: 1 arriba / 2 abajo */
     .layout{
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, calc(-50% + var(--center-y)));
-
+      transform: translateY(var(--center-y));
       display: grid;
       grid-template-rows: auto auto;
       row-gap: var(--gap-y);
@@ -84,7 +92,6 @@
       display: grid;
       grid-template-columns: var(--polaroid-w);
       justify-content: center;
-      align-items: start;
       width: max-content;
     }
 
@@ -93,7 +100,6 @@
       grid-template-columns: repeat(2, var(--polaroid-w));
       column-gap: var(--gap-x);
       justify-content: center;
-      align-items: start;
       width: max-content;
     }
 
@@ -109,8 +115,7 @@
       user-select: none;
       -webkit-tap-highlight-color: transparent;
 
-      /* ✅ corcho: rotación + micro desplazamientos */
-      transform: rotate(var(--r,0deg)) translate(var(--tx,0px), var(--ty,0px));
+      transform: translateY(var(--lift,0)) rotate(var(--r,0deg));
       transition: transform .16s ease, box-shadow .16s ease;
       transform-origin: center;
       will-change: transform;
@@ -118,8 +123,8 @@
 
     @media (hover: hover){
       .polaroid:hover{
-        transform: rotate(var(--r,0deg))
-                   translate(var(--tx,0px), calc(var(--ty,0px) - 2px))
+        transform: translateY(calc(var(--lift,0) - 2px))
+                   rotate(var(--r,0deg))
                    scale(1.03);
         box-shadow: 0 18px 38px rgba(0,0,0,0.45);
         z-index: 20;
@@ -147,7 +152,7 @@
       overflow: hidden;
       background:#eee;
 
-      /* ✅ des-rotada para nitidez */
+      /* ✅ anti-blur: des-rotamos la foto */
       transform: rotate(calc(var(--r,0deg) * -1));
       transform-origin: center;
     }
@@ -162,16 +167,16 @@
       pointer-events: none;
     }
 
-    /* ✅ Offsets corcho (sin superposición) */
-    .p1{ --r:-3deg; --tx:-10px; --ty:-8px; }  /* arriba */
-    .p2{ --r: 2deg; --tx:-14px; --ty: 10px; }
-    .p3{ --r:-2deg; --tx: 12px; --ty:  4px; }
+    /* Offsets */
+    .p1{ --lift:  6px; --r:-1deg; }  /* arriba */
+    .p2{ --lift: -6px; --r: 2deg; }
+    .p3{ --lift:  8px; --r:-2deg; }
 
     /* Modal */
     .modal{
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.9);
+      background: rgba(0,0,0,0.90);
       display: none;
       align-items: center;
       justify-content: center;
@@ -185,153 +190,98 @@
       max-height: 92vh;
       object-fit: contain;
       border-radius: 14px;
+      box-shadow: 0 18px 45px rgba(0,0,0,0.55);
     }
 
-    /* ✅ móvil PRIORIDAD:
-       - mantiene “corcho” suave
-       - fila inferior con scroll + snap si no cabe */
+    /* ✅ móvil: reducimos tamaños y también damos aire */
     @media (max-width: 980px){
       :root{
-        --polaroid-w: 205px;
-        --photo-h: 145px;
-        --gap-x: 26px;
-        --gap-y: 42px;
+        --polaroid-w: 220px;
+        --photo-h: 155px;
+
+        /* ✅ gap mayor que antes */
+        --gap-x: 34px;
+        --gap-y: 40px;
+
         --center-y: 0px;
       }
 
-      .stage{
-        width: 1200px;
-        height: 900px;
+      /* en móvil quitamos inclinación */
+      .polaroid{ --lift:0; --r:0deg; }
+      .photo{ transform:none; }
+    }
+
+    @media (max-width: 520px){
+      :root{
+        --polaroid-w: 200px;
+        --photo-h: 140px;
+        --gap-x: 26px;
+        --gap-y: 34px;
       }
-
-      .row-bottom{
-        justify-content: start;
-        overflow-x: auto;
-        overflow-y: visible;
-        -webkit-overflow-scrolling: touch;
-        padding: 0 10px 10px;
-        scroll-snap-type: x mandatory;
-      }
-      .row-bottom .polaroid{ scroll-snap-align: center; }
-
-      /* offsets más suaves en móvil */
-      .p1{ --r:-2deg; --tx:-6px; --ty:-6px; }
-      .p2{ --r: 1deg; --tx:-8px; --ty: 6px; }
-      .p3{ --r:-1deg; --tx: 8px; --ty: 4px; }
-
-      .photo{ transform: rotate(calc(var(--r,0deg) * -1)); }
+      .board{ padding-top: 78px; }
     }
   </style>
 </head>
 
 <body>
+  <div class="bg"></div>
+  <div class="shade"></div>
+
   <a class="back" href="../../seul.html">← Volver a Seúl</a>
 
-  <div class="viewport" id="viewport">
-    <div class="stage" id="stage">
+  <main class="board">
+    <section class="layout" aria-label="Fotos Bongeunsa Temple">
+      <!-- Arriba: 01 -->
+      <div class="row-top">
+        <div class="polaroid p1" data-src="../../img/seul/bongeusa-temple/01.jpg">
+          <div class="photo"><img src="../../img/seul/bongeusa-temple/01.jpg" alt=""></div>
+        </div>
+      </div>
 
-      <section class="layout" id="layout">
-        <!-- Arriba: 01 -->
-        <div class="row-top">
-          <div class="polaroid p1" data-src="../../img/seul/bongeusa-temple/01.jpg">
-            <div class="photo"><img src="../../img/seul/bongeusa-temple/01.jpg" alt=""></div>
-          </div>
+      <!-- Abajo: 02 + 03 -->
+      <div class="row-bottom">
+        <div class="polaroid p2" data-src="../../img/seul/bongeusa-temple/02.jpg">
+          <div class="photo"><img src="../../img/seul/bongeusa-temple/02.jpg" alt=""></div>
         </div>
 
-        <!-- Abajo: 02 + 03 -->
-        <div class="row-bottom">
-          <div class="polaroid p2" data-src="../../img/seul/bongeusa-temple/02.jpg">
-            <div class="photo"><img src="../../img/seul/bongeusa-temple/02.jpg" alt=""></div>
-          </div>
-
-          <div class="polaroid p3" data-src="../../img/seul/bongeusa-temple/03.jpg">
-            <div class="photo"><img src="../../img/seul/bongeusa-temple/03.jpg" alt=""></div>
-          </div>
+        <div class="polaroid p3" data-src="../../img/seul/bongeusa-temple/03.jpg">
+          <div class="photo"><img src="../../img/seul/bongeusa-temple/03.jpg" alt=""></div>
         </div>
-      </section>
-
-    </div>
-  </div>
+      </div>
+    </section>
+  </main>
 
   <!-- Modal -->
-  <div class="modal" id="modal">
+  <div class="modal" id="modal" aria-hidden="true">
     <img id="modalImg" alt="">
   </div>
 
   <script>
-    // ---------- Modal ----------
     const modal = document.getElementById("modal");
     const modalImg = document.getElementById("modalImg");
 
-    document.querySelectorAll(".polaroid").forEach(p => {
-      p.addEventListener("click", () => {
-        modalImg.src = p.dataset.src;
-        modal.classList.add("open");
-      });
-    });
-
+    function openModal(src){
+      modalImg.src = src;
+      modal.classList.add("open");
+      modal.setAttribute("aria-hidden", "false");
+    }
     function closeModal(){
       modal.classList.remove("open");
+      modal.setAttribute("aria-hidden", "true");
       modalImg.src = "";
     }
+
+    document.querySelectorAll(".polaroid").forEach(p => {
+      p.addEventListener("click", () => {
+        const src = p.dataset.src || p.querySelector("img")?.src;
+        if (src) openModal(src);
+      });
+    });
 
     modal.addEventListener("click", closeModal);
     window.addEventListener("keydown", e => {
       if (e.key === "Escape") closeModal();
     });
-
-    // ---------- FIX: entrar centrado ----------
-    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
-
-    function clamp(v, min, max){ return Math.min(Math.max(v, min), max); }
-
-    function centerOnLayout(){
-      const vp = document.getElementById("viewport");
-      const stage = document.getElementById("stage");
-      const layout = document.getElementById("layout");
-      if (!vp || !stage || !layout) return;
-
-      const cx = layout.offsetLeft + layout.offsetWidth / 2;
-      const cy = layout.offsetTop  + layout.offsetHeight / 2;
-
-      const targetX = cx - vp.clientWidth / 2;
-      const targetY = cy - vp.clientHeight / 2;
-
-      const maxX = stage.offsetWidth  - vp.clientWidth;
-      const maxY = stage.offsetHeight - vp.clientHeight;
-
-      vp.scrollLeft = clamp(targetX, 0, Math.max(0, maxX));
-      vp.scrollTop  = clamp(targetY, 0, Math.max(0, maxY));
-    }
-
-    function hardResetScroll(){
-      const vp = document.getElementById("viewport");
-      if (!vp) return;
-
-      vp.scrollTo({ left: 0, top: 0, behavior: "auto" });
-      // “nudge” (Safari/iOS a veces ignora el primer set)
-      vp.scrollLeft = 1; vp.scrollTop = 1;
-      vp.scrollLeft = 0; vp.scrollTop = 0;
-    }
-
-    function forceCenter(){
-      hardResetScroll();
-
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          centerOnLayout();
-          setTimeout(centerOnLayout, 60);
-          setTimeout(centerOnLayout, 180);
-          setTimeout(centerOnLayout, 420);
-        });
-      });
-    }
-
-    document.addEventListener("DOMContentLoaded", hardResetScroll);
-    window.addEventListener("load", forceCenter);
-    window.addEventListener("pageshow", () => forceCenter());
-    window.addEventListener("orientationchange", () => setTimeout(forceCenter, 250));
-    window.addEventListener("resize", () => setTimeout(forceCenter, 120));
   </script>
 </body>
 </html>
