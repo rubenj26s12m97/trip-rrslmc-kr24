@@ -11,11 +11,9 @@
       --polaroid-w: 240px;
       --photo-h: 165px;
 
-      /* ✅ un poco más de aire (antes 48 / 34) */
       --gap-x: 60px;
       --gap-y: 40px;
 
-      /* ✅ ajuste fino arriba/abajo del bloque */
       --center-y: 0px;
     }
 
@@ -24,44 +22,14 @@
       height: 100%;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background: #000;
-
-      /* ✅ patrón C: fondo fijo + contenido centrado */
-      overflow-x: hidden;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-
-      overflow-anchor: none;
-      scroll-behavior: auto;
-    }
-
-    /* ✅ Fondo fijo (NO se mueve) */
-    .bg{
-      position: fixed;
-      inset: 0;
-      background-image: url("../../img/seul/namsan-park-and-seoul-tower/01.webp");
-      background-repeat: no-repeat;
-      background-position: center 75%;
-      background-size: 130% auto;
-      z-index: 0;
-    }
-
-    .shade{
-      position: fixed;
-      inset: 0;
-      background: radial-gradient(
-        ellipse at center,
-        rgba(0,0,0,0.12),
-        rgba(0,0,0,0.72)
-      );
-      z-index: 1;
-      pointer-events: none;
+      overflow: hidden; /* ✅ scroll en .viewport (X + Y) */
     }
 
     .back{
       position: fixed;
       top: 14px;
       left: 14px;
-      z-index: 10;
+      z-index: 20;
       background: rgba(255,255,255,0.92);
       color: #000;
       text-decoration: none;
@@ -72,24 +40,53 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* ✅ Contenido centrado (sin “entrar por esquina”) */
-    .board{
-      position: relative;
-      z-index: 5;
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      padding: 95px 18px 120px;
-      box-sizing: border-box;
+    /* ✅ Scroll del lienzo completo (fondo + polaroids) */
+    .viewport{
+      position: fixed;
+      inset: 0;
+      overflow: auto;                 /* ✅ vertical + horizontal */
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      background: #000;
+
+      overflow-anchor: none;
+      scroll-behavior: auto;
     }
 
+    /* ✅ Fondo dentro del stage (no fixed) */
+    .stage{
+      position: relative;
+      width: 1700px;  /* ✅ amplio para 3 columnas + gaps */
+      height: 1050px; /* ✅ alto para 3 filas + gaps */
+      background-image: url("../../img/seul/namsan-park-and-seoul-tower/01.webp");
+      background-repeat: no-repeat;
+      background-position: center 75%;
+      background-size: 130% auto;
+    }
+
+    .shade{
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(
+        ellipse at center,
+        rgba(0,0,0,0.12),
+        rgba(0,0,0,0.72)
+      );
+      pointer-events: none;
+    }
+
+    /* ✅ Bloque centrado dentro del stage */
     .stack{
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, calc(-50% + var(--center-y)));
+
       display: grid;
       row-gap: var(--gap-y);
       justify-items: center;
       width: max-content;
-
-      transform: translateY(var(--center-y));
+      z-index: 2;
     }
 
     .row{
@@ -195,37 +192,22 @@
       mix-blend-mode: normal !important;
     }
 
-    /* ✅ móvil: mantener 2/3/2 y permitir scroll horizontal por fila */
+    /* ✅ móvil: NO scroll por fila. Ajustamos tamaños + stage */
     @media (max-width: 980px){
       :root{
         --polaroid-w: 210px;
         --photo-h: 145px;
-
-        /* un pelín menos en móvil */
         --gap-x: 26px;
         --gap-y: 28px;
         --center-y: 0px;
       }
 
-      .board{ padding-top: 78px; }
-
-      .row{
-        justify-content: start;
-
-        overflow-x: auto;
-        overflow-y: visible;
-        -webkit-overflow-scrolling: touch;
-        padding: 0 10px 10px;
-        scroll-snap-type: x mandatory;
-
-        width: min(100%, 96vw);
-        box-sizing: border-box;
+      .stage{
+        width: 1600px;
+        height: 1050px;
       }
 
-      .row.r2{ grid-template-columns: repeat(2, var(--polaroid-w)); }
-      .row.r3{ grid-template-columns: repeat(3, var(--polaroid-w)); }
-
-      .polaroid{ scroll-snap-align: center; --lift:0; --r:0deg; }
+      .polaroid{ --lift:0; --r:0deg; }
       .photo{ transform:none; }
     }
 
@@ -236,54 +218,60 @@
         --gap-x: 20px;
         --gap-y: 24px;
       }
+
+      .stage{
+        width: 1500px;
+        height: 1050px;
+      }
     }
   </style>
 </head>
 
 <body>
-  <div class="bg"></div>
-  <div class="shade"></div>
-
   <a class="back" href="../../seul.html">← Volver a Seúl</a>
 
-  <main class="board">
-    <div class="stack" aria-label="Fotos Namsan Park and Seoul Tower">
+  <div class="viewport" id="viewport">
+    <div class="stage" id="stage">
+      <div class="shade"></div>
 
-      <!-- Fila 1: 2 -->
-      <div class="row r2">
-        <div class="polaroid p1" data-src="../../img/seul/namsan-park-and-seoul-tower/02.jpg">
-          <div class="photo"><img src="../../img/seul/namsan-park-and-seoul-tower/02.jpg" alt=""></div>
+      <div class="stack" id="stack" aria-label="Fotos Namsan Park and Seoul Tower">
+
+        <!-- Fila 1: 2 -->
+        <div class="row r2">
+          <div class="polaroid p1" data-src="../../img/seul/namsan-park-and-seoul-tower/02.jpg">
+            <div class="photo"><img src="../../img/seul/namsan-park-and-seoul-tower/02.jpg" alt=""></div>
+          </div>
+          <div class="polaroid p2" data-src="../../img/seul/namsan-park-and-seoul-tower/03.jpg">
+            <div class="photo"><img src="../../img/seul/namsan-park-and-seoul-tower/03.jpg" alt=""></div>
+          </div>
         </div>
-        <div class="polaroid p2" data-src="../../img/seul/namsan-park-and-seoul-tower/03.jpg">
-          <div class="photo"><img src="../../img/seul/namsan-park-and-seoul-tower/03.jpg" alt=""></div>
+
+        <!-- Fila 2: 3 -->
+        <div class="row r3">
+          <div class="polaroid p3" data-src="../../img/seul/namsan-park-and-seoul-tower/04.jpg">
+            <div class="photo"><img src="../../img/seul/namsan-park-and-seoul-tower/04.jpg" alt=""></div>
+          </div>
+          <div class="polaroid p4" data-src="../../img/seul/namsan-park-and-seoul-tower/05.jpg">
+            <div class="photo"><img src="../../img/seul/namsan-park-and-seoul-tower/05.jpg" alt=""></div>
+          </div>
+          <div class="polaroid p1" data-src="../../img/seul/namsan-park-and-seoul-tower/06.jpg">
+            <div class="photo"><img src="../../img/seul/namsan-park-and-seoul-tower/06.jpg" alt=""></div>
+          </div>
         </div>
+
+        <!-- Fila 3: 2 -->
+        <div class="row r2">
+          <div class="polaroid p2" data-src="../../img/seul/namsan-park-and-seoul-tower/07.jpg">
+            <div class="photo"><img src="../../img/seul/namsan-park-and-seoul-tower/07.jpg" alt=""></div>
+          </div>
+          <div class="polaroid p3" data-src="../../img/seul/namsan-park-and-seoul-tower/08.jpg">
+            <div class="photo"><img src="../../img/seul/namsan-park-and-seoul-tower/08.jpg" alt=""></div>
+          </div>
+        </div>
+
       </div>
-
-      <!-- Fila 2: 3 -->
-      <div class="row r3">
-        <div class="polaroid p3" data-src="../../img/seul/namsan-park-and-seoul-tower/04.jpg">
-          <div class="photo"><img src="../../img/seul/namsan-park-and-seoul-tower/04.jpg" alt=""></div>
-        </div>
-        <div class="polaroid p4" data-src="../../img/seul/namsan-park-and-seoul-tower/05.jpg">
-          <div class="photo"><img src="../../img/seul/namsan-park-and-seoul-tower/05.jpg" alt=""></div>
-        </div>
-        <div class="polaroid p1" data-src="../../img/seul/namsan-park-and-seoul-tower/06.jpg">
-          <div class="photo"><img src="../../img/seul/namsan-park-and-seoul-tower/06.jpg" alt=""></div>
-        </div>
-      </div>
-
-      <!-- Fila 3: 2 -->
-      <div class="row r2">
-        <div class="polaroid p2" data-src="../../img/seul/namsan-park-and-seoul-tower/07.jpg">
-          <div class="photo"><img src="../../img/seul/namsan-park-and-seoul-tower/07.jpg" alt=""></div>
-        </div>
-        <div class="polaroid p3" data-src="../../img/seul/namsan-park-and-seoul-tower/08.jpg">
-          <div class="photo"><img src="../../img/seul/namsan-park-and-seoul-tower/08.jpg" alt=""></div>
-        </div>
-      </div>
-
     </div>
-  </main>
+  </div>
 
   <!-- Modal -->
   <div class="modal" id="modal" aria-hidden="true">
@@ -291,6 +279,7 @@
   </div>
 
   <script>
+    // ---------- Modal ----------
     const modal = document.getElementById("modal");
     const modalImg = document.getElementById("modalImg");
 
@@ -319,6 +308,67 @@
     window.addEventListener("keydown", e => {
       if (e.key === "Escape") closeModal();
     });
+
+    // ---------- Entrar centrado ----------
+    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+
+    function clamp(v, min, max){ return Math.min(Math.max(v, min), max); }
+
+    function centerOnStack(){
+      const vp = document.getElementById("viewport");
+      const stage = document.getElementById("stage");
+      const stack = document.getElementById("stack");
+      if (!vp || !stage || !stack) return;
+
+      const vpRect = vp.getBoundingClientRect();
+      const stRect = stack.getBoundingClientRect();
+
+      const stCx = stRect.left + stRect.width / 2;
+      const stCy = stRect.top  + stRect.height / 2;
+
+      const vpCx = vpRect.left + vpRect.width / 2;
+      const vpCy = vpRect.top  + vpRect.height / 2;
+
+      const dx = stCx - vpCx;
+      const dy = stCy - vpCy;
+
+      let targetX = vp.scrollLeft + dx;
+      let targetY = vp.scrollTop  + dy;
+
+      const maxX = Math.max(0, stage.scrollWidth  - vp.clientWidth);
+      const maxY = Math.max(0, stage.scrollHeight - vp.clientHeight);
+
+      vp.scrollLeft = clamp(targetX, 0, maxX);
+      vp.scrollTop  = clamp(targetY, 0, maxY);
+    }
+
+    function hardResetScroll(){
+      const vp = document.getElementById("viewport");
+      if (!vp) return;
+      vp.scrollTo({ left: 0, top: 0, behavior: "auto" });
+    }
+
+    function forceCenter(){
+      hardResetScroll();
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          centerOnStack();
+          setTimeout(centerOnStack, 80);
+          setTimeout(centerOnStack, 220);
+          setTimeout(centerOnStack, 520);
+        });
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      hardResetScroll();
+      requestAnimationFrame(centerOnStack);
+    });
+
+    window.addEventListener("load", forceCenter);
+    window.addEventListener("pageshow", () => forceCenter());
+    window.addEventListener("orientationchange", () => setTimeout(forceCenter, 250));
+    window.addEventListener("resize", () => setTimeout(forceCenter, 140));
   </script>
 </body>
 </html>
